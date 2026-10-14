@@ -1,0 +1,53 @@
+# -------------------------------------------------------------
+# Nexus MVC Framework - Git Ignore Configuration
+# -------------------------------------------------------------
+
+# Environment & Sensitive Credentials
+.env
+.env.backup
+.env.production
+.env.*.local
+!.env.example
+
+# Composer & NPM Dependencies
+/vendor/
+/node_modules/
+
+# Database Files
+/database/*.sqlite
+/database/*.sqlite-journal
+/database/*.db
+/database/*.db-journal
+
+# Public Assets & Build Artifacts
+/public/build/
+/public/storage
+/public/hot
+
+# Storage Runtime & User Uploads
+/storage/app/public/*
+!/storage/app/public/.gitignore
+/storage/app/private/*
+!/storage/app/private/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+
+# Logs, Dumps & Temp Files
+*.log
+*.tmp
+*.bak
+.phpunit.result.cache
+
+# IDE, Editor & OS Artifacts
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db

@@ -1,0 +1,551 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Nexus Framework - Official CLI Utility
+ * 
+ * Command Runner elegan untuk pengembangan, migrasi skema database,
+ * code generator (controller, model, migration), serta concurrent dev server.
+ */
+
+if (php_sapi_name() !== 'cli') {
+    fwrite(STDERR, "Nexus CLI hanya dapat dijalankan melalui terminal CLI.\n");
+    exit(1);
+}
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Core\App;
+use Core\Database\Migrator;
+use Core\Database\Schema\Blueprint;
+use Core\Database\Schema\Schema;
+
+/** @var App $app */
+$app = require_once __DIR__ . '/bootstrap/app.php';
+
+// ANSI Color Constants untuk UI CLI yang modern
+const COLOR_RESET   = "\033[0m";
+const COLOR_BOLD    = "\033[1m";
+const COLOR_RED     = "\033[31m";
+const COLOR_GREEN   = "\033[32m";
+const COLOR_YELLOW  = "\033[33m";
+const COLOR_BLUE    = "\033[34m";
+const COLOR_MAGENTA = "\033[35m";
+const COLOR_CYAN    = "\033[36m";
+const COLOR_WHITE   = "\033[37m";
+const COLOR_GRAY    = "\033[90m";
+
+$argv = $_SERVER['argv'] ?? [];
+$command = $argv[1] ?? 'help';
+$argument = $argv[2] ?? null;
+
+// Route Command
+match ($command) {
+    'dev' => runDevServer(),
+    'migrate' => runMigrate(),
+    'migrate:rollback' => runMigrateRollback(),
+    'migrate:status' => runMigrateStatus(),
+    'storage:link' => runStorageLink(),
+    'make:controller', 'make:handler' => makeController($argument),
+    'make:model' => makeModel($argument),
+    'make:request' => makeRequest($argument),
+    'make:migration' => makeMigration($argument),
+    'help', 'list', '--help', '-h' => showHelp(),
+    default => showUnknownCommand($command),
+};
+
+exit(0);
+
+
+/* -------------------------------------------------------------
+ * COMMAND HANDLERS
+ * ------------------------------------------------------------- */
+
+/**
+ * Menjalankan PHP local development server dan Vite dev server (HMR)
+ * secara concurrent dalam satu proses terminal.
+ */
+function runDevServer(): void
+{
+    printBanner();
+    echo COLOR_CYAN . "  Starting Nexus Dev Environment...\n" . COLOR_RESET;
+
+    $phpHost = '127.0.0.1';
+    $phpPort = 8000;
+    $publicDir = __DIR__ . '/public';
+
+    // Periksa apakah port PHP 8000 sudah terpakai
+    $fp = @fsockopen($phpHost, $phpPort, $errno, $errstr, 0.5);
+    if (is_resource($fp)) {
+        fclose($fp);
+        echo COLOR_YELLOW . "  Port {$phpPort} sedang digunakan, mencoba port 8080...\n" . COLOR_RESET;
+        $phpPort = 8080;
+    }
+
+    // Cek apakah Vite Dev Server sudah berjalan di port 5173
+    $viteHost = '127.0.0.1';
+    $vitePort = 5173;
+    $viteSocket = @fsockopen($viteHost, $vitePort, $errno, $errstr, 0.2);
+    $viteAlreadyRunning = is_resource($viteSocket);
+    if ($viteAlreadyRunning) {
+        fclose($viteSocket);
+        echo COLOR_GREEN . "  ✔ Vite Server:" . COLOR_RESET . " http://localhost:{$vitePort} " . COLOR_CYAN . "(sudah aktif di terminal lain)\n" . COLOR_RESET;
+    } else {
+        echo COLOR_GREEN . "  ✔ Vite Server:" . COLOR_RESET . " http://localhost:{$vitePort}\n";
+    }
+
+    echo COLOR_GRAY . "  Tekan Ctrl+C untuk menghentikan dev server.\n\n" . COLOR_RESET;
+
+    // Perintah untuk PHP Built-in Server
+    $phpCmd = sprintf('php -S %s:%d -t %s', $phpHost, $phpPort, escapeshellarg($publicDir));
+
+    // Buka proses Vite hanya jika belum berjalan
+    $viteProcess = null;
+    if (!$viteAlreadyRunning) {
+        $viteCmd = 'npm run dev';
+        $viteProcess = proc_open($viteCmd, [
+            0 => ['pipe', 'r'],
+            1 => STDOUT,
+            2 => STDERR,
+        ], $vitePipes, __DIR__);
+    }
+
+    // Tangani sinyal termination untuk mematikan kedua proses dengan bersih
+    if (function_exists('pcntl_signal')) {
+        $cleanup = function () use ($viteProcess) {
+            echo "\n" . COLOR_YELLOW . "  Mematikan Nexus Dev Server..." . COLOR_RESET . "\n";
+            if (is_resource($viteProcess)) {
+                $status = proc_get_status($viteProcess);
+                if (!empty($status['pid'])) {
+                    posix_kill($status['pid'], SIGTERM);
+                }
+                proc_close($viteProcess);
+            }
+            // Hapus file marker hot reload jika tertinggal
+            $hot = __DIR__ . '/public/hot';
+            if (file_exists($hot)) {
+                @unlink($hot);
+            }
+            exit(0);
+        };
+
+        pcntl_signal(SIGINT, $cleanup);
+        pcntl_signal(SIGTERM, $cleanup);
+    }
+
+    // Jalankan PHP server di foreground
+    passthru($phpCmd);
+
+    // Jika PHP server ditutup, tutup proses Vite juga
+    if (is_resource($viteProcess)) {
+        proc_terminate($viteProcess);
+        proc_close($viteProcess);
+    }
+}
+
+/**
+ * Eksekusi migrasi database.
+ */
+function runMigrate(): void
+{
+    echo COLOR_BOLD . COLOR_CYAN . "=== Nexus Migrations ===" . COLOR_RESET . "\n";
+
+    try {
+        $migrator = new Migrator();
+        $migrated = $migrator->run();
+
+        if (empty($migrated)) {
+            echo COLOR_GRAY . "Tidak ada migrasi baru untuk dijalankan (Database up to date).\n" . COLOR_RESET;
+            return;
+        }
+
+        foreach ($migrated as $migration) {
+            echo COLOR_GREEN . "  ✔ Berhasil : " . COLOR_RESET . $migration . "\n";
+        }
+        echo COLOR_BOLD . COLOR_GREEN . "\nSeluruh migrasi selesai dieksekusi!\n" . COLOR_RESET;
+    } catch (Throwable $e) {
+        echo COLOR_RED . "  ✖ Error Migrasi: " . $e->getMessage() . COLOR_RESET . "\n";
+        exit(1);
+    }
+}
+
+/**
+ * Rollback batch migrasi terakhir.
+ */
+function runMigrateRollback(): void
+{
+    echo COLOR_BOLD . COLOR_YELLOW . "=== Nexus Rollback ===" . COLOR_RESET . "\n";
+
+    try {
+        $migrator = new Migrator();
+        $rolledBack = $migrator->rollback();
+
+        if (empty($rolledBack)) {
+            echo COLOR_GRAY . "Tidak ada batch migrasi yang dapat dibatalkan.\n" . COLOR_RESET;
+            return;
+        }
+
+        foreach ($rolledBack as $migration) {
+            echo COLOR_YELLOW . "  ↺ Rolled back : " . COLOR_RESET . $migration . "\n";
+        }
+        echo COLOR_BOLD . COLOR_GREEN . "\nBatch migrasi berhasil di-rollback!\n" . COLOR_RESET;
+    } catch (Throwable $e) {
+        echo COLOR_RED . "  ✖ Error Rollback: " . $e->getMessage() . COLOR_RESET . "\n";
+        exit(1);
+    }
+}
+
+/**
+ * Tampilkan status seluruh migrasi dalam format tabel.
+ */
+function runMigrateStatus(): void
+{
+    echo COLOR_BOLD . COLOR_CYAN . "=== Status Migrasi Database ===" . COLOR_RESET . "\n\n";
+
+    $migrator = new Migrator();
+    $statusList = $migrator->status();
+
+    if (empty($statusList)) {
+        echo COLOR_GRAY . "Belum ada file migrasi pada direktori database/migrations/.\n" . COLOR_RESET;
+        return;
+    }
+
+    printf("%-50s | %-10s | %-6s | %-20s\n", "File Migrasi", "Status", "Batch", "Tanggal Eksekusi");
+    echo str_repeat('-', 95) . "\n";
+
+    foreach ($statusList as $item) {
+        $statusLabel = $item['ran'] ? COLOR_GREEN . "Ran" . COLOR_RESET : COLOR_RED . "Pending" . COLOR_RESET;
+        $batch = $item['batch'] !== null ? (string) $item['batch'] : '-';
+        $time = $item['executed_at'] ?? '-';
+
+        printf("%-50s | %-19s | %-6s | %-20s\n", $item['migration'], $statusLabel, $batch, $time);
+    }
+    echo "\n";
+}
+
+/**
+ * Buat symbolic link dari storage/app/public ke public/storage.
+ */
+function runStorageLink(): void
+{
+    printBanner();
+    echo COLOR_CYAN . "  Menghubungkan Storage Link...\n" . COLOR_RESET;
+
+    $target = storage_path('app/public');
+    $link = public_path('storage');
+
+    if (!is_dir($target)) {
+        @mkdir($target, 0755, true);
+    }
+
+    if (file_exists($link) || is_link($link)) {
+        echo COLOR_YELLOW . "  [!] Tautan [public/storage] sudah ada sebelumnya.\n\n" . COLOR_RESET;
+        return;
+    }
+
+    if (@symlink($target, $link)) {
+        echo COLOR_GREEN . "  ✔ Tautan [public/storage] berhasil dibuat -> [{$target}].\n\n" . COLOR_RESET;
+    } else {
+        echo COLOR_RED . "  ✖ Gagal membuat symbolic link [public/storage]. Pastikan izin hak akses mencukupi.\n\n" . COLOR_RESET;
+    }
+}
+
+/**
+ * Generator Controller/Handler baru.
+ */
+function makeController(?string $name): void
+{
+    if (empty($name)) {
+        echo COLOR_RED . "Error: Mohon tentukan nama controller. Contoh: php nexus make:controller UserController\n" . COLOR_RESET;
+        exit(1);
+    }
+
+    $name = trim($name);
+    if (!str_ends_with($name, 'Controller') && !str_ends_with($name, 'Handler')) {
+        $name .= 'Controller';
+    }
+
+    $targetDir = __DIR__ . '/app/Handlers';
+    if (!is_dir($targetDir)) {
+        mkdir($targetDir, 0755, true);
+    }
+
+    $targetFile = $targetDir . '/' . $name . '.php';
+
+    if (file_exists($targetFile)) {
+        echo COLOR_YELLOW . "File [app/Handlers/{$name}.php] sudah ada.\n" . COLOR_RESET;
+        return;
+    }
+
+    $stub = <<<PHP
+<?php
+
+declare(strict_types=1);
+
+namespace App\Handlers;
+
+use Core\Http\Request;
+use Core\Http\Response;
+
+class {$name} extends Controller
+{
+    /**
+     * Tampilkan resource utama.
+     */
+    public function index(Request \$request): Response
+    {
+        return \$this->json([
+            'message' => 'Hello from {$name}!',
+        ]);
+    }
+}
+PHP;
+
+    file_put_contents($targetFile, $stub);
+    echo COLOR_GREEN . "✔ Controller berhasil dibuat:" . COLOR_RESET . " app/Handlers/{$name}.php\n";
+}
+
+/**
+ * Generator Model Active Record baru.
+ */
+function makeModel(?string $name): void
+{
+    if (empty($name)) {
+        echo COLOR_RED . "Error: Mohon tentukan nama model. Contoh: php nexus make:model Product\n" . COLOR_RESET;
+        exit(1);
+    }
+
+    $name = trim($name);
+    $targetDir = __DIR__ . '/app/Models';
+    if (!is_dir($targetDir)) {
+        mkdir($targetDir, 0755, true);
+    }
+
+    $targetFile = $targetDir . '/' . $name . '.php';
+
+    if (file_exists($targetFile)) {
+        echo COLOR_YELLOW . "File [app/Models/{$name}.php] sudah ada.\n" . COLOR_RESET;
+        return;
+    }
+
+    $shortSnake = strtolower((string) preg_replace('/(?<!^)[A-Z]/', '_$0', $name));
+    $tableName = $shortSnake . 's';
+
+    $stub = <<<PHP
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use Core\Database\Model;
+
+class {$name} extends Model
+{
+    protected string \$table = '{$tableName}';
+
+    protected array \$fillable = [
+        // Masukkan kolom yang diizinkan untuk mass assignment
+    ];
+}
+PHP;
+
+    file_put_contents($targetFile, $stub);
+    echo COLOR_GREEN . "✔ Model berhasil dibuat:" . COLOR_RESET . " app/Models/{$name}.php\n";
+}
+
+/**
+ * Generator FormRequest baru untuk validasi input.
+ */
+function makeRequest(?string $name): void
+{
+    if (empty($name)) {
+        echo COLOR_RED . "Error: Mohon tentukan nama request. Contoh: php nexus make:request StoreUserRequest\n" . COLOR_RESET;
+        exit(1);
+    }
+
+    $name = trim($name);
+    $targetDir = __DIR__ . '/app/Requests';
+    if (!is_dir($targetDir)) {
+        mkdir($targetDir, 0755, true);
+    }
+
+    $targetFile = $targetDir . '/' . $name . '.php';
+
+    if (file_exists($targetFile)) {
+        echo COLOR_YELLOW . "File [app/Requests/{$name}.php] sudah ada.\n" . COLOR_RESET;
+        return;
+    }
+
+    $stub = <<<PHP
+<?php
+
+declare(strict_types=1);
+
+namespace App\Requests;
+
+use Core\Http\FormRequest;
+
+class {$name} extends FormRequest
+{
+    /**
+     * Tentukan apakah pengguna diizinkan melakukan request ini.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Aturan validasi yang berlaku untuk request ini.
+     *
+     * @return array<string, string|array<int, string>>
+     */
+    public function rules(): array
+    {
+        return [
+            // Contoh: 'name' => 'required|min:3|max:50',
+            // Contoh: 'email' => 'required|email|unique:users,email',
+        ];
+    }
+
+    /**
+     * Pesan error kustom untuk aturan validasi.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            // Contoh: 'name.required' => 'Nama lengkap wajib diisi.',
+        ];
+    }
+
+    /**
+     * Label nama atribut yang ramah pengguna.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            // Contoh: 'name' => 'Nama Lengkap',
+        ];
+    }
+}
+PHP;
+
+    file_put_contents($targetFile, $stub);
+    echo COLOR_GREEN . "✔ FormRequest berhasil dibuat:" . COLOR_RESET . " app/Requests/{$name}.php\n";
+}
+
+/**
+ * Generator file migrasi baru menggunakan Schema Blueprint.
+ */
+function makeMigration(?string $name): void
+{
+    if (empty($name)) {
+        echo COLOR_RED . "Error: Mohon tentukan nama migrasi. Contoh: php nexus make:migration create_products_table\n" . COLOR_RESET;
+        exit(1);
+    }
+
+    $name = strtolower(trim($name));
+    $name = preg_replace('/[^a-z0-9_]/', '_', $name);
+
+    $timestamp = date('Y_m_d_His');
+    $fileName = "{$timestamp}_{$name}";
+    $targetFile = __DIR__ . "/database/migrations/{$fileName}.php";
+
+    // Format nama class: create_products_table -> CreateProductsTable
+    $className = str_replace(' ', '', ucwords(str_replace('_', ' ', $name)));
+
+    // Tebak nama tabel
+    $tableName = 'my_table';
+    if (preg_match('/^create_(.+)_table$/', $name, $matches)) {
+        $tableName = $matches[1];
+    }
+
+    $stub = <<<PHP
+<?php
+
+declare(strict_types=1);
+
+use Core\Database\Migration;
+
+class {$className} extends Migration
+{
+    public function up(PDO \$pdo): void
+    {
+        \$this->execute("
+            CREATE TABLE IF NOT EXISTS {$tableName} (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                -- Kolom Anda di sini:
+                -- name VARCHAR(255) NOT NULL,
+                created_at DATETIME NOT NULL,
+                updated_at DATETIME NOT NULL
+            );
+        ", \$pdo);
+    }
+
+    public function down(PDO \$pdo): void
+    {
+        \$this->execute("DROP TABLE IF EXISTS {$tableName};", \$pdo);
+    }
+}
+PHP;
+
+    file_put_contents($targetFile, $stub);
+    echo COLOR_GREEN . "✔ File migrasi berhasil dibuat:" . COLOR_RESET . " database/migrations/{$fileName}.php\n";
+}
+
+/**
+ * Tampilkan banner ASCII dan bantuan perintah.
+ */
+function showHelp(): void
+{
+    printBanner();
+    echo COLOR_BOLD . "Penggunaan:" . COLOR_RESET . "\n";
+    echo "  php nexus <perintah> [argumen]\n\n";
+
+    echo COLOR_BOLD . "Perintah Tersedia:" . COLOR_RESET . "\n";
+
+    $commands = [
+        'dev'                   => 'Jalankan concurrent dev server (PHP server + Vite HMR)',
+        'make:controller <Name>'=> 'Buat class Controller/Handler baru di app/Handlers/',
+        'make:model <Name>'     => 'Buat class Model Active Record baru di app/Models/',
+        'make:request <Name>'   => 'Buat class FormRequest validasi baru di app/Requests/',
+        'make:migration <Name>' => 'Buat file skema migrasi baru di database/migrations/',
+        'migrate'               => 'Jalankan seluruh migrasi database yang pending',
+        'migrate:rollback'      => 'Batalkan (rollback) batch migrasi database terakhir',
+        'migrate:status'        => 'Tampilkan tabel status seluruh file migrasi',
+        'storage:link'          => 'Buat symbolic link public/storage -> storage/app/public',
+        'help'                  => 'Tampilkan menu bantuan ini',
+    ];
+
+    foreach ($commands as $cmd => $desc) {
+        printf("  " . COLOR_CYAN . "%-24s" . COLOR_RESET . " %s\n", $cmd, $desc);
+    }
+    echo "\n";
+}
+
+function showUnknownCommand(string $cmd): void
+{
+    echo COLOR_RED . "Perintah [{$cmd}] tidak dikenali." . COLOR_RESET . "\n";
+    echo "Ketik " . COLOR_YELLOW . "php nexus help" . COLOR_RESET . " untuk melihat daftar perintah yang tersedia.\n";
+    exit(1);
+}
+
+function printBanner(): void
+{
+    echo COLOR_CYAN . <<<BANNER
+
+    _   __                         __  ___ _    ________
+   / | / /__  _  ____  _______    /  |/  /| |  / / ____/
+  /  |/ / _ \| |/_/ / / / ___/   / /|_/ / | | / / /     
+ / /|  /  __/>  </ /_/ (__  )   / /  / /  | |/ / /___   
+/_/ |_/\___/_/|_|\__,_/____/   /_/  /_/   |___/\____/   
+BANNER;
+    echo COLOR_GRAY . "\n    Handmade MVC Framework &bull; Pure PHP 8.2+ & Vite Tailwind CSS v4\n\n" . COLOR_RESET;
+}
