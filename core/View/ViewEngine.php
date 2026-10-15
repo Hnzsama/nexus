@@ -102,6 +102,22 @@ class ViewEngine
     }
 
     /**
+     * Alias untuk block() (kompatibilitas sintaks section).
+     */
+    public function section(string $name, ?string $content = null): void
+    {
+        $this->block($name, $content);
+    }
+
+    /**
+     * Alias untuk endBlock() (kompatibilitas sintaks endSection).
+     */
+    public function endSection(): void
+    {
+        $this->endBlock();
+    }
+
+    /**
      * Render konten blok tertentu ke dalam layout.
      *
      * @param string $name Nama blok yang ingin ditampilkan

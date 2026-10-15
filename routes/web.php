@@ -60,4 +60,12 @@ Router::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.d
 Router::post('/users/{id}/delete', [UserController::class, 'destroy'])->name('users.delete');
 Router::get('/users/seed', [UserController::class, 'seed'])->name('users.seed');
 
+use App\Handlers\DocsHandler;
+
+// Rute Dokumentasi Teknis Sistem (SPA Viewer dengan Dukungan Mermaid & Markdown)
+Router::get('/docs', [DocsHandler::class, 'index'])->name('docs.index');
+Router::get('/docs/{slug}', [DocsHandler::class, 'index'])->name('docs.show');
+Router::get('/api/docs/{slug}', [DocsHandler::class, 'apiGetDoc'])->name('api.docs.get');
+
+
 
