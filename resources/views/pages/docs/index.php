@@ -194,34 +194,43 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
 
         /* Mermaid Wrapper */
         .mermaid-wrapper {
-            background: linear-gradient(180deg, #0d1322 0%, #070c17 100%);
-            border: 1px solid rgba(99, 102, 241, 0.25);
+            background: linear-gradient(180deg, #0b1120 0%, #060913 100%);
+            border: 1px solid rgba(99, 102, 241, 0.35);
             border-radius: 0.85rem;
-            margin: 2rem 0;
+            margin: 2.5rem 0;
             overflow: hidden;
-            box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.7);
+            width: 100%;
         }
         .mermaid-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.95);
             border-bottom: 1px solid rgba(99, 102, 241, 0.2);
-            padding: 0.55rem 1.25rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #a5b4fc;
+            padding: 0.6rem 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
         .mermaid-chart {
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 1.75rem 1rem;
-            overflow-x: auto;
+            align-items: flex-start;
+            padding: 2.5rem 1.5rem;
+            overflow: auto;
+            max-height: 80vh;
+            min-height: 300px;
+            background-color: #070b16;
+            background-image: radial-gradient(rgba(99, 102, 241, 0.15) 1px, transparent 1px);
+            background-size: 24px 24px;
         }
         .mermaid-chart svg {
-            max-width: 100%;
-            height: auto;
+            display: block;
+            max-width: none !important;
+            height: auto !important;
+            transform-origin: top center;
+            transition: transform 0.15s ease-out;
+            margin: 0 auto;
         }
 
         /* Tables */
@@ -409,12 +418,12 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
             </div>
 
             <!-- Content Area: Rendered via Marked.js (Instan 0ms) -->
-            <article id="markdown-container" class="doc-content max-w-4xl">
+            <article id="markdown-container" class="doc-content max-w-5xl 2xl:max-w-6xl w-full">
                 <!-- Di-inject secara instan oleh JS -->
             </article>
 
             <!-- Bottom Chapter Pager -->
-            <div class="max-w-4xl mt-14 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4" id="chapter-pager">
+            <div class="max-w-5xl 2xl:max-w-6xl w-full mt-14 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4" id="chapter-pager">
                 <button id="btn-prev-chapter" class="btn btn-sm btn-outline btn-neutral w-full sm:w-auto gap-2 hidden">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     <span id="prev-chapter-title">Bab Sebelumnya</span>
@@ -428,6 +437,42 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
         </main>
 
     </div>
+
+    <!-- Modal Layar Penuh Diagram Mermaid (DaisyUI Standard) -->
+    <dialog id="modal-diagram-zoom" class="modal modal-bottom sm:modal-middle backdrop-blur-md">
+        <div class="modal-box w-11/12 max-w-7xl max-h-[92vh] bg-[#070b16] border border-primary/30 p-0 flex flex-col overflow-hidden shadow-2xl">
+            <!-- Modal Header Toolbar -->
+            <div class="px-5 py-3.5 bg-base-300/90 border-b border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+                    <h3 class="font-bold text-sm text-white font-mono tracking-tight">Inspeksi Detail Diagram Ukuran Penuh</h3>
+                    <span class="badge badge-xs badge-primary/20 text-primary border border-primary/30 font-mono hidden sm:inline-flex">High Resolution</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" class="btn btn-xs btn-outline btn-neutral h-7 min-h-0 px-2 gap-1 text-xs" onclick="zoomModalDiagram(-0.25)" title="Perkecil (-)">
+                        <i data-lucide="zoom-out" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <span class="text-xs font-mono text-primary font-bold px-2 w-12 text-center" id="modal-zoom-level">100%</span>
+                    <button type="button" class="btn btn-xs btn-outline btn-neutral h-7 min-h-0 px-2 gap-1 text-xs" onclick="zoomModalDiagram(0.25)" title="Perbesar (+)">
+                        <i data-lucide="zoom-in" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" class="btn btn-xs btn-outline btn-neutral h-7 min-h-0 px-2 text-xs" onclick="resetModalDiagramZoom()" title="Reset Zoom">
+                        Reset
+                    </button>
+                    <form method="dialog" class="ml-2">
+                        <button class="btn btn-xs btn-circle btn-ghost text-base-content/70 hover:text-white text-sm">✕</button>
+                    </form>
+                </div>
+            </div>
+            <!-- Modal Body Canvas -->
+            <div id="modal-diagram-body" class="flex-1 overflow-auto p-8 flex items-center justify-center bg-[#070b16] min-h-[500px]" style="background-image: radial-gradient(rgba(99, 102, 241, 0.15) 1px, transparent 1px); background-size: 24px 24px;">
+                <!-- Di-inject SVG secara dinamis -->
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
 
     <!-- Data Dictionary Embed (Seluruh teks markdown tersimpan untuk render instan 0ms) -->
     <script id="docs-data" type="application/json">
@@ -457,25 +502,141 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
         const prevTitle = document.getElementById('prev-chapter-title');
         const nextTitle = document.getElementById('next-chapter-title');
 
-        // 2. Inisialisasi Mermaid.js dengan Dark Theme
+        // 2. Inisialisasi Mermaid.js dengan Full Resolution & Dark Theme (Teks Tajam & Besar)
+        let mermaidCounter = 0;
+        window.diagramZoomStates = {};
+
         if (window.mermaid) {
             mermaid.initialize({
                 startOnLoad: false,
                 theme: 'dark',
                 securityLevel: 'loose',
                 fontFamily: 'Plus Jakarta Sans, sans-serif',
+                fontSize: 14,
                 themeVariables: {
                     darkMode: true,
-                    background: '#070c17',
+                    background: '#070b16',
                     primaryColor: '#6366f1',
                     primaryTextColor: '#f8fafc',
                     primaryBorderColor: '#818cf8',
                     lineColor: '#38bdf8',
                     secondaryColor: '#ec4899',
-                    tertiaryColor: '#1e293b'
-                }
+                    tertiaryColor: '#1e293b',
+                    mainBkg: '#0d1527',
+                    nodeBorder: '#6366f1',
+                    clusterBkg: '#0b1120',
+                    titleColor: '#f8fafc',
+                    edgeLabelBackground: '#0d1527',
+                    actorBkg: '#1e1b4b',
+                    actorBorder: '#818cf8',
+                    actorTextColor: '#ffffff',
+                    actorLineColor: '#6366f1',
+                    signalColor: '#38bdf8',
+                    signalTextColor: '#e2e8f0',
+                    labelBoxBkgColor: '#1e1b4b',
+                    labelBoxBorderColor: '#818cf8',
+                    labelTextColor: '#ffffff',
+                    loopTextColor: '#e2e8f0',
+                    noteBorderColor: '#f59e0b',
+                    noteBkgColor: '#2d2006',
+                    noteTextColor: '#fef3c7',
+                    fontSize: '13px'
+                },
+                flowchart: { useMaxWidth: false, htmlLabels: true, padding: 18 },
+                sequence: { 
+                    useMaxWidth: false, 
+                    showSequenceNumbers: true, 
+                    actorFontSize: 14, 
+                    noteFontSize: 13, 
+                    messageFontSize: 13,
+                    boxMargin: 12,
+                    boxTextMargin: 6,
+                    noteMargin: 12,
+                    messageMargin: 38
+                },
+                er: { 
+                    useMaxWidth: false, 
+                    fontSize: 13,
+                    layoutDirection: 'TB'
+                },
+                state: { useMaxWidth: false }
             });
         }
+
+        // Helper Kontrol Zoom Interaktif Diagram
+        window.zoomMermaid = function(diagId, delta) {
+            const chart = document.getElementById(diagId + '-chart');
+            if (!chart) return;
+            const svg = chart.querySelector('svg');
+            if (!svg) return;
+
+            let current = window.diagramZoomStates[diagId] || 1.0;
+            current = Math.max(0.4, Math.min(2.5, current + delta));
+            window.diagramZoomStates[diagId] = current;
+
+            svg.style.transform = `scale(${current})`;
+            const levelEl = document.getElementById(diagId + '-zoom-level');
+            if (levelEl) levelEl.textContent = Math.round(current * 100) + '%';
+        };
+
+        window.resetZoomMermaid = function(diagId) {
+            const chart = document.getElementById(diagId + '-chart');
+            if (!chart) return;
+            const svg = chart.querySelector('svg');
+            if (!svg) return;
+
+            window.diagramZoomStates[diagId] = 1.0;
+            svg.style.transform = 'scale(1)';
+            const levelEl = document.getElementById(diagId + '-zoom-level');
+            if (levelEl) levelEl.textContent = '100%';
+        };
+
+        window.openFullscreenDiagram = function(diagId) {
+            const chart = document.getElementById(diagId + '-chart');
+            if (!chart) return;
+            const svg = chart.querySelector('svg');
+            if (!svg) return;
+
+            const modal = document.getElementById('modal-diagram-zoom');
+            const modalBody = document.getElementById('modal-diagram-body');
+            if (!modal || !modalBody) return;
+
+            modalBody.innerHTML = '';
+            const clone = svg.cloneNode(true);
+            clone.id = 'modal-cloned-svg';
+            clone.style.transform = 'scale(1)';
+            clone.style.maxWidth = 'none';
+            clone.style.height = 'auto';
+            clone.style.transformOrigin = 'center center';
+            modalBody.appendChild(clone);
+
+            window.modalZoomLevel = 1.0;
+            const modalLevel = document.getElementById('modal-zoom-level');
+            if (modalLevel) modalLevel.textContent = '100%';
+
+            modal.showModal();
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.zoomModalDiagram = function(delta) {
+            const svg = document.getElementById('modal-cloned-svg');
+            if (!svg) return;
+
+            window.modalZoomLevel = Math.max(0.3, Math.min(3.0, (window.modalZoomLevel || 1.0) + delta));
+            svg.style.transform = `scale(${window.modalZoomLevel})`;
+            const modalLevel = document.getElementById('modal-zoom-level');
+            if (modalLevel) modalLevel.textContent = Math.round(window.modalZoomLevel * 100) + '%';
+        };
+
+        window.resetModalDiagramZoom = function() {
+            const svg = document.getElementById('modal-cloned-svg');
+            if (!svg) return;
+
+            window.modalZoomLevel = 1.0;
+            svg.style.transform = 'scale(1)';
+            const modalLevel = document.getElementById('modal-zoom-level');
+            if (modalLevel) modalLevel.textContent = '100%';
+        };
 
         // 3. Konfigurasi Kustom Marked.js Renderer
         const renderer = new marked.Renderer();
@@ -488,19 +649,37 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                 ? (tokenOrCode.lang || '') 
                 : (infostring || '')).trim().toLowerCase();
 
-            // Diagram Mermaid
+            // Diagram Mermaid dengan Toolbar Interaktif & Dukungan Zoom
             if (language === 'mermaid') {
+                mermaidCounter++;
+                const diagId = 'mermaid-' + mermaidCounter;
                 return `
-                    <div class="mermaid-wrapper">
+                    <div class="mermaid-wrapper" id="${diagId}-wrap">
                         <div class="mermaid-header">
-                            <span class="flex items-center gap-1.5 font-mono">
+                            <div class="flex items-center gap-2 font-mono">
                                 <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                                Diagram Interaktif
-                            </span>
-                            <span class="badge badge-xs badge-neutral font-mono">Mermaid.js</span>
+                                <span class="text-xs font-semibold text-slate-200">Diagram Arsitektur Interaktif</span>
+                                <span class="badge badge-xs badge-primary/20 text-primary border border-primary/30 font-mono">Mermaid Engine</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" class="btn btn-xs btn-outline btn-neutral h-7 min-h-0 px-2 gap-1 text-[11px]" onclick="zoomMermaid('${diagId}', -0.2)" title="Perkecil (-)">
+                                    <i data-lucide="zoom-out" class="w-3 h-3"></i>
+                                </button>
+                                <span class="text-[11px] font-mono text-slate-300 w-12 text-center font-bold" id="${diagId}-zoom-level">100%</span>
+                                <button type="button" class="btn btn-xs btn-outline btn-neutral h-7 min-h-0 px-2 gap-1 text-[11px]" onclick="zoomMermaid('${diagId}', 0.2)" title="Perbesar (+)">
+                                    <i data-lucide="zoom-in" class="w-3 h-3"></i>
+                                </button>
+                                <button type="button" class="btn btn-xs btn-outline btn-neutral h-7 min-h-0 px-2 text-[11px]" onclick="resetZoomMermaid('${diagId}')" title="Reset Zoom ke 100%">
+                                    100%
+                                </button>
+                                <button type="button" class="btn btn-xs btn-primary h-7 min-h-0 px-2.5 gap-1.5 text-[11px] ml-1 shadow-sm shadow-primary/30" onclick="openFullscreenDiagram('${diagId}')" title="Buka Mode Layar Penuh">
+                                    <i data-lucide="maximize-2" class="w-3 h-3"></i>
+                                    <span>Layar Penuh</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="mermaid-chart">
-                            <pre class="mermaid">${rawCode}</pre>
+                        <div class="mermaid-chart" id="${diagId}-chart">
+                            <pre class="mermaid" id="${diagId}">${rawCode}</pre>
                         </div>
                     </div>
                 `;
@@ -615,6 +794,28 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                     try {
                         await mermaid.run({
                             nodes: mermaidEls
+                        });
+
+                        // Post-process SVG agar teks dan ukuran diagram tampil tajam & tidak menciut
+                        mermaidEls.forEach(el => {
+                            const svg = el.querySelector('svg') || el;
+                            if (svg && svg.tagName && svg.tagName.toLowerCase() === 'svg') {
+                                svg.style.maxWidth = 'none';
+                                svg.style.height = 'auto';
+                                svg.removeAttribute('height');
+
+                                const viewBox = svg.getAttribute('viewBox');
+                                if (viewBox) {
+                                    const parts = viewBox.trim().split(/\s+/);
+                                    if (parts.length === 4) {
+                                        const vbWidth = parseFloat(parts[2]);
+                                        if (vbWidth > 0) {
+                                            // Terapkan min-width natural diagram agar tidak ada teks yang menciut
+                                            svg.style.minWidth = Math.max(vbWidth, 750) + 'px';
+                                        }
+                                    }
+                                }
+                            }
                         });
                     } catch (err) {
                         console.warn('Mermaid render notice:', err);
