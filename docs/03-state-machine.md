@@ -8,16 +8,18 @@ Siklus hidup kursi dikontrol secara ketat melalui state transisi di bawah ini:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> AVAILABLE : Kursi Siap pada Jadwal Tayang
+    direction TB
 
-    AVAILABLE --> HELD : User Masuk Checkout (Pessimistic Lock + TTL 10 Menit)
-    
-    HELD --> AVAILABLE : Expiry Timeout (Lazy Check atau Background Worker)
-    HELD --> AVAILABLE : User Batal / Webhook Midtrans 'cancel' / 'deny'
-    HELD --> BOOKED : Webhook Midtrans 'settlement' / 'capture:accept' Berhasil
-    
-    BOOKED --> [*] : Penayangan Selesai (Arsip)
-    BOOKED --> AVAILABLE : Admin Force Refund (Mitigasi Bencana Overbook)
+    state "AVAILABLE<br>(Kursi Siap Dipesan)" as AVAILABLE
+    state "HELD<br>(Terkunci Sementara 10 Menit)" as HELD
+    state "BOOKED<br>(Resmi Terjual)" as BOOKED
+
+    [*] --> AVAILABLE : Jadwal Tayang Diterbitkan
+    AVAILABLE --> HELD : Checkout Masuk (Pessimistic Lock)
+    HELD --> AVAILABLE : Waktu Bayar Hangus atau Dibatalkan
+    HELD --> BOOKED : Pembayaran Berhasil Terverifikasi
+    BOOKED --> AVAILABLE : Force Refund Admin (Mitigasi Overbook)
+    BOOKED --> [*] : Penayangan Film Selesai
 ```
 
 ---
@@ -26,18 +28,23 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    [*] --> UNPAID : Order Created (Snap Token Diterbitkan)
+    direction TB
 
-    UNPAID --> PAID : Webhook 'settlement' / 'capture:accept'
-    UNPAID --> EXPIRED : Webhook 'expire' / Database Expiry Timeout
-    UNPAID --> CANCELLED : Webhook 'cancel' / 'deny'
-    
-    PAID --> REFUNDED : Penanganan Insiden Overbook / Refund Otomatis
-    
+    state "UNPAID<br>(Menunggu Pembayaran)" as UNPAID
+    state "PAID<br>(Pembayaran Lunas)" as PAID
+    state "EXPIRED<br>(Transaksi Hangus)" as EXPIRED
+    state "CANCELLED<br>(Transaksi Dibatalkan)" as CANCELLED
+    state "REFUNDED<br>(Dana Dikembalikan)" as REFUNDED
+
+    [*] --> UNPAID : Snap Token Diterbitkan
+    UNPAID --> PAID : Webhook Settlement atau Capture
+    UNPAID --> EXPIRED : Batas Waktu 10 Menit Habis
+    UNPAID --> CANCELLED : Dibatalkan Pengguna atau Bank Deny
+    PAID --> REFUNDED : Auto-Refund Insiden Overbook
+    PAID --> [*] : Tiket Ditukarkan di Bioskop
     EXPIRED --> [*]
     CANCELLED --> [*]
     REFUNDED --> [*]
-    PAID --> [*] : Tiket Ditukarkan di Bioskop
 ```
 
 ---

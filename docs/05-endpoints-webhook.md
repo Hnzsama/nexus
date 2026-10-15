@@ -220,8 +220,8 @@ flowchart TD
     CheckPaid -- Ya (Idempotent Hit) --> CommitIdempotent["Rollback/Commit & Return 200 OK (Already Processed)"]
     CheckPaid -- Belum --> UpdatePay["Update Audit Trail Payments (raw_response_json, midtrans_id)"]
     UpdatePay --> CheckStatus{"Status Midtrans?"}
-    CheckStatus -- settlement / capture:accept --> SetPaid["Ubah Order = PAID, Hold = CONVERTED, Terbitkan Tiket & QR"]
-    CheckStatus -- expire / cancel / deny --> SetRelease["Ubah Order = EXPIRED/CANCELLED, Hold = RELEASED"]
+    CheckStatus -- "settlement / capture:accept" --> SetPaid["Ubah Order = PAID, Hold = CONVERTED, Terbitkan Tiket & QR"]
+    CheckStatus -- "expire / cancel / deny" --> SetRelease["Ubah Order = EXPIRED / CANCELLED, Hold = RELEASED"]
     SetPaid --> CommitSuccess["Commit DB & Return 200 OK Success"]
     SetRelease --> CommitSuccess
 ```
