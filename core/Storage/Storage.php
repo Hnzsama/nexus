@@ -69,7 +69,16 @@ class Storage
         }
 
         // Pada sistem Linux / WSL / Unix
-        return @symlink($target, $link);
+        if (function_exists('symlink')) {
+            return (bool) @symlink($target, $link);
+        }
+
+        if (function_exists('exec')) {
+            @exec('ln -s ' . escapeshellarg($target) . ' ' . escapeshellarg($link));
+            return is_link($link);
+        }
+
+        return false;
     }
 
     /**

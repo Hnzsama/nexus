@@ -250,10 +250,24 @@ function runStorageLink(): void
         return;
     }
 
-    if (@symlink($target, $link)) {
+    $success = false;
+
+    if (function_exists('symlink')) {
+        $success = @symlink($target, $link);
+    } elseif (function_exists('exec')) {
+        @exec('ln -s ' . escapeshellarg($target) . ' ' . escapeshellarg($link));
+        $success = is_link($link);
+    }
+
+    if ($success) {
         echo COLOR_GREEN . "  ✔ Tautan [{$link}] berhasil dibuat -> [{$target}].\n\n" . COLOR_RESET;
     } else {
-        echo COLOR_RED . "  ✖ Gagal membuat symbolic link [{$link}]. Pastikan izin hak akses mencukupi.\n\n" . COLOR_RESET;
+        echo COLOR_RED . "  ✖ Gagal membuat symbolic link [{$link}].\n" . COLOR_RESET;
+        if (!function_exists('symlink')) {
+            echo COLOR_YELLOW . "  Penyebab: Fungsi 'symlink' dinonaktifkan di pengaturan PHP aaPanel (Disabled functions).\n" . COLOR_RESET;
+            echo COLOR_CYAN . "  Jalankan perintah ini di terminal server Anda untuk membuat link secara manual:\n" . COLOR_RESET;
+            echo COLOR_WHITE . "  ln -s " . escapeshellarg($target) . " " . escapeshellarg($link) . "\n\n" . COLOR_RESET;
+        }
     }
 }
 
