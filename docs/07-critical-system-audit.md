@@ -158,16 +158,29 @@ sequenceDiagram
 Pelaku (kompetitor bioskop atau bot calo) menulis skrip Python sederhana yang menembak endpoint `/checkout/create-transaction` secara berulang setiap 9 menit untuk mengunci seluruh kursi studio (200 kursi) tanpa pernah membayar. Akibatnya, calon penonton asli melihat studio penuh padahal bioskop sebenarnya kosong melompong.
 
 ```mermaid
-flowchart LR
-    Bot["Bot / Bad Actor"] --> RL{"1. Rate Limiting<br>(Max 3 req/min)"}
-    RL -- Lewat Limit --> BlockIP["Blokir Sementara (HTTP 429)"]
+flowchart TD
+    Bot(["Inisiasi Request Booking"]) --> RL{"1. Rate Limiting<br>(Max 3 req/min)"}
+    
+    RL -- Lewat Limit --> BlockIP["⛔ Blokir Sementara (HTTP 429)"]
     RL -- Lolos --> ActHold{"2. Cek Active Hold User<br>(Max 1 Active Hold)"}
-    ActHold -- Sudah Punya Hold --> RejectHold["Tolak Request: Selesaikan Order Sebelumnya"]
+    
+    ActHold -- Sudah Punya Hold --> RejectHold["⚠️ Tolak: Selesaikan Order Sebelumnya"]
     ActHold -- Belum Ada --> SeatLimit{"3. Validasi Max Seats<br>(Max 6 Kursi/Order)"}
-    SeatLimit -- > 6 Kursi --> RejectSeat["Tolak: Maksimal 6 Kursi"]
-    SeatLimit -- OK --> PenaltyCheck{"4. Cek Riwayat Expired<br>(Penalty Cooldown)"}
-    PenaltyCheck -- 3x Expired berturut --> Cooldown["Terapkan Sanksi Cooldown 60 Menit"]
-    PenaltyCheck -- Bersih --> AllowBooking["Izinkan Penguncian Kursi"]
+    
+    SeatLimit -- > 6 Kursi --> RejectSeat["⚠️ Tolak: Maksimal 6 Kursi per Transaksi"]
+    SeatLimit -- OK (1-6 Kursi) --> PenaltyCheck{"4. Cek Riwayat Expired<br>(Penalty Cooldown)"}
+    
+    PenaltyCheck -- 3x Hangus Berturut --> Cooldown["🚫 Sanksi Shadowban 60 Menit"]
+    PenaltyCheck -- Bersih --> AllowBooking["✅ Izinkan Penguncian Kursi (Pessimistic Lock)"]
+    
+    classDef default fill:#0f172a,stroke:#6366f1,stroke-width:1.5px,color:#f8fafc;
+    classDef decision fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#ffffff;
+    classDef blocked fill:#450a0a,stroke:#ef4444,stroke-width:1.5px,color:#fca5a5;
+    classDef success fill:#052e16,stroke:#22c55e,stroke-width:2px,color:#86efac;
+    
+    class RL,ActHold,SeatLimit,PenaltyCheck decision;
+    class BlockIP,RejectHold,RejectSeat,Cooldown blocked;
+    class AllowBooking success;
 ```
 
 ### Solusi Arsitektur & Mitigasi Konkret:
