@@ -290,7 +290,7 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
     <!-- Top Sticky Header Khusus Docs Portal -->
     <header class="h-16 bg-[#0a0f1d]/90 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50 px-4 sm:px-8 flex items-center justify-between">
         <div class="flex items-center gap-4">
-            <a href="<?= route('docs.index') ?>" class="flex items-center gap-3">
+            <a href="<?= route('docs.index') ?>" id="brand-link" class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-accent p-[1px] shadow-lg shadow-primary/25">
                     <div class="w-full h-full bg-[#0a0f1d] rounded-[11px] flex items-center justify-center font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-primary to-accent text-sm">
                         NX
@@ -353,7 +353,7 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                                 class="doc-nav-item flex items-center justify-between p-2.5 rounded-xl transition-all <?= $isActive ? 'nav-item-active' : 'text-base-content/75 hover:bg-white/5 hover:text-white' ?>"
                             >
                                 <div class="flex items-center gap-2.5 min-w-0">
-                                    <div class="icon-box w-7 h-7 rounded-lg flex items-center justify-center shrink-0 <?= $isActive ? 'bg-white/20 text-white' : 'bg-base-300 text-primary' ?>">
+                                    <div class="icon-box w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-base-300 text-primary">
                                         <i data-lucide="<?= $doc['icon'] ?>" class="w-3.5 h-3.5"></i>
                                     </div>
                                     <div class="truncate">
@@ -386,7 +386,7 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                 <div>
                     <div class="breadcrumbs text-xs text-base-content/50 py-0 mb-2">
                         <ul>
-                            <li><span>Nexus Docs</span></li>
+                            <li><a href="/docs/readme" id="breadcrumb-home" class="hover:text-primary transition-colors cursor-pointer">Nexus Docs</a></li>
                             <li id="breadcrumb-current" class="text-primary font-semibold"><?= htmlspecialchars($activeDoc['title'] ?? 'Overview') ?></li>
                         </ul>
                     </div>
@@ -557,7 +557,25 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
             });
         };
 
-        // 4. Render Dokumen Instan (0ms Delay)
+        // 4. Update Status Aktif Sidebar secara Sinkron & Instan (0ms Delay)
+        function updateSidebarActive(slug) {
+            currentSlug = slug;
+            const items = document.querySelectorAll('.doc-nav-item');
+            items.forEach(el => {
+                const elSlug = el.getAttribute('data-slug');
+                const isMatch = (elSlug === slug);
+
+                if (isMatch) {
+                    el.classList.add('nav-item-active');
+                    el.classList.remove('text-base-content/75', 'hover:bg-white/5', 'hover:text-white');
+                } else {
+                    el.classList.remove('nav-item-active');
+                    el.classList.add('text-base-content/75', 'hover:bg-white/5', 'hover:text-white');
+                }
+            });
+        }
+
+        // 5. Render Dokumen Instan (0ms Delay)
         async function renderDocument(slug) {
             const doc = documents[slug];
             if (!doc) {
@@ -566,6 +584,10 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
             }
 
             currentSlug = slug;
+
+            // Update Status Aktif Sidebar & Pager LANGSUNG di awal
+            updateSidebarActive(slug);
+            updateChapterPager(slug);
 
             // Update Metadata Header
             titleDisplay.textContent = doc.title;
@@ -579,9 +601,14 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
             readingTimeDisplay.textContent = `~${minutes} min read (${words.toLocaleString()} kata)`;
 
             // Render Markdown ke HTML
-            container.innerHTML = marked.parse(doc.content);
+            try {
+                container.innerHTML = marked.parse(doc.content);
+            } catch (err) {
+                console.error('Marked parse error:', err);
+                container.innerHTML = `<pre class="text-error p-4">${doc.content}</pre>`;
+            }
 
-            // Render Diagram Mermaid jika ada
+            // Render Diagram Mermaid jika ada (non-blocking)
             if (window.mermaid) {
                 const mermaidEls = container.querySelectorAll('.mermaid');
                 if (mermaidEls.length > 0) {
@@ -595,40 +622,14 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                 }
             }
 
-            // Refresh Lucide Icons
+            // Refresh Lucide Icons (non-blocking)
             if (window.lucide) {
-                lucide.createIcons();
-            }
-
-            // Update Active Status di Sidebar
-            document.querySelectorAll('.doc-nav-item').forEach(el => {
-                const isMatch = (el.getAttribute('data-slug') === slug);
-                const iconBox = el.querySelector('.icon-box');
-                const badge = el.querySelector('.order-badge');
-
-                if (isMatch) {
-                    el.classList.add('nav-item-active');
-                    el.classList.remove('text-base-content/75', 'hover:bg-white/5', 'hover:text-white');
-                    if (iconBox) {
-                        iconBox.className = 'icon-box w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-white/20 text-white';
-                    }
-                    if (badge) {
-                        badge.className = 'order-badge badge badge-xs font-mono text-[9px] shrink-0 bg-white/20 text-white border-0 opacity-100';
-                    }
-                } else {
-                    el.classList.remove('nav-item-active');
-                    el.classList.add('text-base-content/75', 'hover:bg-white/5', 'hover:text-white');
-                    if (iconBox) {
-                        iconBox.className = 'icon-box w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-base-300 text-primary';
-                    }
-                    if (badge) {
-                        badge.className = 'order-badge badge badge-neutral badge-xs font-mono text-[9px] shrink-0 opacity-60';
-                    }
+                try {
+                    lucide.createIcons();
+                } catch (err) {
+                    console.warn('Lucide icon error:', err);
                 }
-            });
-
-            // Update Pager
-            updateChapterPager(slug);
+            }
         }
 
         function updateChapterPager(slug) {
@@ -654,13 +655,22 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
         }
 
         function navigateTo(slug) {
-            if (slug === currentSlug) return;
-            history.pushState({ slug }, '', `/docs/${slug}`);
+            if (!slug || !documents[slug]) return;
+            
+            // Switch highlight sidebar INSTAN sebelum operasi lainnya
+            updateSidebarActive(slug);
+
+            // Update URL browser History API
+            if (window.location.pathname !== `/docs/${slug}`) {
+                history.pushState({ slug }, '', `/docs/${slug}`);
+            }
+
+            // Render dokumen
             renderDocument(slug);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // 5. Klik Menu Sidebar SPA
+        // 6. Klik Menu Sidebar SPA
         document.getElementById('doc-menu').addEventListener('click', (e) => {
             const item = e.target.closest('.doc-nav-item');
             if (!item) return;
@@ -675,15 +685,48 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
             }
         });
 
-        // 6. Popstate Back/Forward
-        window.addEventListener('popstate', (e) => {
-            const slug = e.state?.slug || location.pathname.split('/').pop() || 'readme';
-            if (documents[slug]) {
-                renderDocument(slug);
+        // 7. Intercept Klik Link di Dalam Konten Markdown
+        container.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+            const href = link.getAttribute('href');
+            if (href && (href.startsWith('/docs/') || href === '/docs')) {
+                e.preventDefault();
+                const targetSlug = href.replace(/^\/docs\/?/, '') || 'readme';
+                navigateTo(targetSlug);
             }
         });
 
-        // 7. Salin Full Raw Markdown
+        // 8. Intercept Klik Brand Logo & Breadcrumb
+        const brandLink = document.getElementById('brand-link');
+        if (brandLink) {
+            brandLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('readme');
+            });
+        }
+        const breadcrumbHome = document.getElementById('breadcrumb-home');
+        if (breadcrumbHome) {
+            breadcrumbHome.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('readme');
+            });
+        }
+
+        // 9. Popstate Back/Forward
+        window.addEventListener('popstate', (e) => {
+            let slug = e.state?.slug;
+            if (!slug) {
+                const parts = window.location.pathname.replace(/\/+$/, '').split('/');
+                const last = parts[parts.length - 1];
+                slug = (last && last !== 'docs' && documents[last]) ? last : 'readme';
+            }
+            if (documents[slug]) {
+                navigateTo(slug);
+            }
+        });
+
+        // 10. Salin Full Raw Markdown
         btnCopyRaw.addEventListener('click', () => {
             const doc = documents[currentSlug];
             if (!doc) return;
@@ -699,7 +742,7 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
             });
         });
 
-        // 8. Filter Pencarian Cepat
+        // 11. Filter Pencarian Cepat
         searchInput.addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase().trim();
             document.querySelectorAll('#doc-menu li').forEach(li => {
@@ -708,7 +751,7 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
             });
         });
 
-        // 9. Toggle Sidebar Mobile
+        // 12. Toggle Sidebar Mobile
         if (btnToggleSidebar && sidebar) {
             btnToggleSidebar.addEventListener('click', () => {
                 sidebar.classList.toggle('hidden');

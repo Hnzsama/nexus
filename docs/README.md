@@ -27,27 +27,27 @@ docs/
 
 ## 🧭 DAFTAR ISI & TAUTAN MODUL
 
-1. [Bab 1: Arsitektur Sistem & Complete Midtrans Payment Flow](file:///home/Akuma/projects/mvc/docs/01-architecture-payment-flow.md)
+1. [Bab 1: Arsitektur Sistem & Complete Midtrans Payment Flow](/docs/01-architecture-payment-flow)
    - Gambaran alur bisnis end-to-end
    - Sequence Diagram interaktif Midtrans (Mermaid)
-2. [Bab 2: Skema Database & ERD Lengkap](file:///home/Akuma/projects/mvc/docs/02-database-schema-erd.md)
+2. [Bab 2: Skema Database & ERD Lengkap](/docs/02-database-schema-erd)
    - Diagram Relasi Antar Entitas (Mermaid ERD)
    - DDL MySQL 8.0+ InnoDB (11 Tabel Relasional + Composite Indexes)
-3. [Bab 3: State Machine Kursi, Transaksi & Midtrans Status](file:///home/Akuma/projects/mvc/docs/03-state-machine.md)
+3. [Bab 3: State Machine Kursi, Transaksi & Midtrans Status](/docs/03-state-machine)
    - Diagram State Machine Kursi (Mermaid StateDiagram)
    - Matriks Pemetaan Status Transaksi Internal vs Status Engine Midtrans
-4. [Bab 4: Mekanisme Teknis Seat Locking & Synchronized Timer](file:///home/Akuma/projects/mvc/docs/04-seat-locking-timer.md)
+4. [Bab 4: Mekanisme Teknis Seat Locking & Synchronized Timer](/docs/04-seat-locking-timer)
    - Larangan modifikasi status di master seats (Kardinalitas)
    - Pessimistic Locking (`SELECT ... FOR UPDATE`) & Canonical Sorting
    - Strategi Dual-Layer Expiry (Lazy vs Cron Cleanup)
    - Sinkronisasi Timer Presisi: Midtrans `custom_expiry` vs Database TTL
-5. [Bab 5: Spesifikasi Endpoint & Webhook Handler Idempoten](file:///home/Akuma/projects/mvc/docs/05-endpoints-webhook.md)
+5. [Bab 5: Spesifikasi Endpoint & Webhook Handler Idempoten](/docs/05-endpoints-webhook)
    - Service Controller `CheckoutController::createTransaction`
    - Webhook Handler Idempoten & Verifikasi Kriptografis Signature SHA-512
-6. [Bab 6: Frontend Real-Time & Snap Integration](file:///home/Akuma/projects/mvc/docs/06-frontend-realtime.md)
+6. [Bab 6: Frontend Real-Time & Snap Integration](/docs/06-frontend-realtime)
    - Denah Kursi Interaktif (Tailwind CSS + DaisyUI) dengan 4 Status Visual
    - Modul Vanilla JS `BookingEngine` dengan kompensasi jam server & integrasi `window.snap.pay`
-7. [Bab 7: Critical System Audit & Midtrans Edge-Cases](file:///home/Akuma/projects/mvc/docs/07-critical-system-audit.md)
+7. [Bab 7: Critical System Audit & Midtrans Edge-Cases](/docs/07-critical-system-audit)
    - Audit Finansial: Pembayaran Sukses di Detik Terakhir vs Webhook Terlambat (Auto-Refund Engine)
    - Audit Keamanan: Webhook Spoofing & Replay Attack (Reverse API Verification)
    - Audit Konkurensi: Race Condition & Deadlock MySQL InnoDB
