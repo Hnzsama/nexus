@@ -316,8 +316,8 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
         </div>
 
         <div class="flex items-center gap-3">
-            <button id="btn-copy-raw" class="btn btn-xs sm:btn-sm btn-outline btn-neutral gap-1.5 font-medium text-xs">
-                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <button id="btn-copy-raw" class="btn btn-xs sm:btn-sm bg-slate-800 hover:bg-slate-700 text-slate-100 hover:text-white border border-slate-600/80 gap-1.5 font-medium text-xs shadow-md transition-all">
+                <svg class="w-3.5 h-3.5 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                 <span class="hidden sm:inline">Salin Raw MD</span>
             </button>
             <a href="<?= route('home') ?>" class="btn btn-xs sm:btn-sm btn-primary gap-1.5 font-medium text-xs">
@@ -424,8 +424,8 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
 
             <!-- Bottom Chapter Pager -->
             <div class="max-w-5xl 2xl:max-w-6xl w-full mt-14 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4" id="chapter-pager">
-                <button id="btn-prev-chapter" class="btn btn-sm btn-outline btn-neutral w-full sm:w-auto gap-2 hidden">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <button id="btn-prev-chapter" class="btn btn-sm bg-slate-800 hover:bg-slate-700 text-slate-100 hover:text-white border border-slate-600/80 w-full sm:w-auto gap-2 hidden shadow-md">
+                    <i data-lucide="arrow-left" class="w-4 h-4 text-slate-300"></i>
                     <span id="prev-chapter-title">Bab Sebelumnya</span>
                 </button>
                 <div class="flex-1"></div>
@@ -448,19 +448,22 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                     <h3 class="font-bold text-sm text-white font-mono tracking-tight">Inspeksi Detail Diagram Ukuran Penuh</h3>
                     <span class="badge badge-xs badge-primary/20 text-primary border border-primary/30 font-mono hidden sm:inline-flex">High Resolution</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button type="button" class="btn btn-xs btn-outline btn-neutral h-7 min-h-0 px-2 gap-1 text-xs" onclick="zoomModalDiagram(-0.25)" title="Perkecil (-)">
-                        <i data-lucide="zoom-out" class="w-3.5 h-3.5"></i>
+                <div class="flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-lg border border-slate-700/80 shadow-md">
+                    <button type="button" class="btn btn-xs bg-slate-800 hover:bg-slate-700 text-slate-100 hover:text-white border border-slate-600/80 h-7 min-h-0 px-2.5 gap-1 text-xs font-semibold transition-all shadow-sm" onclick="zoomModalDiagram(-0.25)" title="Perkecil (-)">
+                        <svg class="w-3.5 h-3.5 text-slate-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                        <span class="hidden sm:inline">Perkecil</span>
                     </button>
-                    <span class="text-xs font-mono text-primary font-bold px-2 w-12 text-center" id="modal-zoom-level">100%</span>
-                    <button type="button" class="btn btn-xs btn-outline btn-neutral h-7 min-h-0 px-2 gap-1 text-xs" onclick="zoomModalDiagram(0.25)" title="Perbesar (+)">
-                        <i data-lucide="zoom-in" class="w-3.5 h-3.5"></i>
+                    <span class="text-xs font-mono text-primary-content bg-primary/25 border border-primary/40 px-2 py-0.5 rounded font-extrabold min-w-[3.5rem] text-center" id="modal-zoom-level">100%</span>
+                    <button type="button" class="btn btn-xs bg-slate-800 hover:bg-slate-700 text-slate-100 hover:text-white border border-slate-600/80 h-7 min-h-0 px-2.5 gap-1 text-xs font-semibold transition-all shadow-sm" onclick="zoomModalDiagram(0.25)" title="Perbesar (+)">
+                        <svg class="w-3.5 h-3.5 text-slate-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                        <span class="hidden sm:inline">Perbesar</span>
                     </button>
-                    <button type="button" class="btn btn-xs btn-outline btn-neutral h-7 min-h-0 px-2 text-xs" onclick="resetModalDiagramZoom()" title="Reset Zoom">
-                        Reset
+                    <button type="button" class="btn btn-xs bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-600/80 h-7 min-h-0 px-2.5 gap-1 text-xs font-mono font-semibold transition-all shadow-sm" onclick="resetModalDiagramZoom()" title="Reset Zoom">
+                        <svg class="w-3 h-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <span>Reset</span>
                     </button>
-                    <form method="dialog" class="ml-2">
-                        <button class="btn btn-xs btn-circle btn-ghost text-base-content/70 hover:text-white text-sm">✕</button>
+                    <form method="dialog" class="ml-1">
+                        <button class="btn btn-xs btn-circle bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-600 text-sm">✕</button>
                     </form>
                 </div>
             </div>
@@ -661,19 +664,22 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                                 <span class="text-xs font-semibold text-slate-200">Diagram Arsitektur Interaktif</span>
                                 <span class="badge badge-xs badge-primary/20 text-primary border border-primary/30 font-mono">Mermaid Engine</span>
                             </div>
-                            <div class="flex items-center gap-1.5">
-                                <button type="button" class="btn btn-xs btn-outline btn-neutral h-7 min-h-0 px-2 gap-1 text-[11px]" onclick="zoomMermaid('${diagId}', -0.2)" title="Perkecil (-)">
-                                    <i data-lucide="zoom-out" class="w-3 h-3"></i>
+                            <div class="flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-lg border border-slate-700/80 shadow-md">
+                                <button type="button" class="btn btn-xs bg-slate-800 hover:bg-slate-700 text-slate-100 hover:text-white border border-slate-600/80 h-7 min-h-0 px-2.5 gap-1 text-[11px] font-semibold transition-all shadow-sm" onclick="zoomMermaid('${diagId}', -0.2)" title="Perkecil (-)">
+                                    <svg class="w-3.5 h-3.5 text-slate-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                                    <span class="hidden sm:inline">Perkecil</span>
                                 </button>
-                                <span class="text-[11px] font-mono text-slate-300 w-12 text-center font-bold" id="${diagId}-zoom-level">100%</span>
-                                <button type="button" class="btn btn-xs btn-outline btn-neutral h-7 min-h-0 px-2 gap-1 text-[11px]" onclick="zoomMermaid('${diagId}', 0.2)" title="Perbesar (+)">
-                                    <i data-lucide="zoom-in" class="w-3 h-3"></i>
+                                <span class="text-xs font-mono text-primary-content bg-primary/25 border border-primary/40 px-2 py-0.5 rounded font-extrabold min-w-[3.25rem] text-center" id="${diagId}-zoom-level">100%</span>
+                                <button type="button" class="btn btn-xs bg-slate-800 hover:bg-slate-700 text-slate-100 hover:text-white border border-slate-600/80 h-7 min-h-0 px-2.5 gap-1 text-[11px] font-semibold transition-all shadow-sm" onclick="zoomMermaid('${diagId}', 0.2)" title="Perbesar (+)">
+                                    <svg class="w-3.5 h-3.5 text-slate-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                                    <span class="hidden sm:inline">Perbesar</span>
                                 </button>
-                                <button type="button" class="btn btn-xs btn-outline btn-neutral h-7 min-h-0 px-2 text-[11px]" onclick="resetZoomMermaid('${diagId}')" title="Reset Zoom ke 100%">
-                                    100%
+                                <button type="button" class="btn btn-xs bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-600/80 h-7 min-h-0 px-2.5 gap-1 text-[11px] font-mono font-semibold transition-all shadow-sm" onclick="resetZoomMermaid('${diagId}')" title="Reset Skala">
+                                    <svg class="w-3 h-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    <span>Reset</span>
                                 </button>
-                                <button type="button" class="btn btn-xs btn-primary h-7 min-h-0 px-2.5 gap-1.5 text-[11px] ml-1 shadow-sm shadow-primary/30" onclick="openFullscreenDiagram('${diagId}')" title="Buka Mode Layar Penuh">
-                                    <i data-lucide="maximize-2" class="w-3 h-3"></i>
+                                <button type="button" class="btn btn-xs btn-primary h-7 min-h-0 px-2.5 gap-1.5 text-[11px] font-bold text-white ml-1 shadow-md shadow-primary/30" onclick="openFullscreenDiagram('${diagId}')" title="Buka Mode Layar Penuh">
+                                    <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 3h6v6m-6 0l6-6M9 21H3v-6m0 6l6-6"/></svg>
                                     <span>Layar Penuh</span>
                                 </button>
                             </div>
@@ -934,11 +940,9 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
 
             navigator.clipboard.writeText(doc.content).then(() => {
                 const orig = btnCopyRaw.innerHTML;
-                btnCopyRaw.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-success"></i><span class="text-success">Tersalin!</span>`;
-                if (window.lucide) lucide.createIcons();
+                btnCopyRaw.innerHTML = `<svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg><span class="text-emerald-400 font-semibold">Tersalin!</span>`;
                 setTimeout(() => {
                     btnCopyRaw.innerHTML = orig;
-                    if (window.lucide) lucide.createIcons();
                 }, 2000);
             });
         });
