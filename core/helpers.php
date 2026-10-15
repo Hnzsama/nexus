@@ -49,16 +49,37 @@ if (!function_exists('base_path')) {
 
 if (!function_exists('public_path')) {
     /**
-     * Dapatkan path absolut ke direktori public.
+     * Dapatkan path absolut ke direktori public (web root).
+     * Mendukung deployment standar maupun aaPanel (di mana public berada di luar folder proyek).
      *
      * @param string $path
      * @return string
      */
     function public_path(string $path = ''): string
     {
-        return base_path('public' . ($path !== '' ? '/' . ltrim($path, '/\\') : ''));
+        $customPublic = env('PUBLIC_PATH');
+        $isAaPanel = (bool) env('IS_AAPANEL', false);
+
+        if (!empty($customPublic)) {
+            $customPublicStr = (string) $customPublic;
+            $rawPath = str_starts_with($customPublicStr, '/')
+                ? $customPublicStr
+                : base_path($customPublicStr);
+            $real = realpath($rawPath);
+            $basePublic = $real !== false ? $real : rtrim($rawPath, '/\\');
+        } elseif ($isAaPanel) {
+            // Mode aaPanel: web root berada 1 tingkat di luar folder proyek (..)
+            $real = realpath(dirname(base_path()));
+            $basePublic = $real !== false ? $real : dirname(base_path());
+        } else {
+            // Mode standar lokal / Docker: folder public berada di dalam proyek
+            $basePublic = base_path('public');
+        }
+
+        return $path !== '' ? $basePublic . '/' . ltrim($path, '/\\') : $basePublic;
     }
 }
+
 
 if (!function_exists('csrf_token')) {
     /**

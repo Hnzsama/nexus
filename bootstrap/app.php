@@ -14,7 +14,11 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 // 2. Load konfigurasi .env
 $baseDir = dirname(__DIR__);
-Env::load($baseDir . '/.env');
+if (file_exists($baseDir . '/.env')) {
+    Env::load($baseDir . '/.env');
+} elseif (file_exists(dirname($baseDir) . '/.env')) {
+    Env::load(dirname($baseDir) . '/.env');
+}
 
 // 3. Konfigurasi path root untuk ViteAsset
 ViteAsset::setBasePath($baseDir);

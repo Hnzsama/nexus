@@ -74,7 +74,7 @@ function runDevServer(): void
 
     $phpHost = '127.0.0.1';
     $phpPort = 8000;
-    $publicDir = __DIR__ . '/public';
+    $publicDir = public_path();
 
     // Periksa apakah port PHP 8000 sudah terpakai
     $fp = @fsockopen($phpHost, $phpPort, $errno, $errstr, 0.5);
@@ -240,15 +240,20 @@ function runStorageLink(): void
         @mkdir($target, 0755, true);
     }
 
+    $linkParent = dirname($link);
+    if (!is_dir($linkParent)) {
+        @mkdir($linkParent, 0755, true);
+    }
+
     if (file_exists($link) || is_link($link)) {
-        echo COLOR_YELLOW . "  [!] Tautan [public/storage] sudah ada sebelumnya.\n\n" . COLOR_RESET;
+        echo COLOR_YELLOW . "  [!] Tautan [{$link}] sudah ada sebelumnya.\n\n" . COLOR_RESET;
         return;
     }
 
     if (@symlink($target, $link)) {
-        echo COLOR_GREEN . "  ✔ Tautan [public/storage] berhasil dibuat -> [{$target}].\n\n" . COLOR_RESET;
+        echo COLOR_GREEN . "  ✔ Tautan [{$link}] berhasil dibuat -> [{$target}].\n\n" . COLOR_RESET;
     } else {
-        echo COLOR_RED . "  ✖ Gagal membuat symbolic link [public/storage]. Pastikan izin hak akses mencukupi.\n\n" . COLOR_RESET;
+        echo COLOR_RED . "  ✖ Gagal membuat symbolic link [{$link}]. Pastikan izin hak akses mencukupi.\n\n" . COLOR_RESET;
     }
 }
 

@@ -75,7 +75,7 @@ class ViteAsset
         }
 
         // Cek file marker hot jika ada
-        $hotFile = self::getBasePath() . '/public/hot';
+        $hotFile = function_exists('public_path') ? public_path('hot') : self::getBasePath() . '/public/hot';
         if (file_exists($hotFile)) {
             $hotUrl = trim((string) file_get_contents($hotFile));
             if (!empty($hotUrl)) {
@@ -178,9 +178,10 @@ class ViteAsset
         }
 
         $base = self::getBasePath();
+        $publicBuild = function_exists('public_path') ? public_path('build') : $base . '/public/build';
         $possiblePaths = [
-            $base . '/public/build/.vite/manifest.json', // Vite 5+ default
-            $base . '/public/build/manifest.json',       // Vite 4 / custom legacy
+            $publicBuild . '/.vite/manifest.json', // Vite 5+ default
+            $publicBuild . '/manifest.json',       // Vite 4 / custom legacy
         ];
 
         $manifestPath = null;
@@ -193,7 +194,7 @@ class ViteAsset
 
         if ($manifestPath === null) {
             throw new RuntimeException(
-                "File manifest Vite tidak ditemukan di direktori [public/build/]. " .
+                "File manifest Vite tidak ditemukan pada direktori [{$publicBuild}]. " .
                 "Jalankan 'npm run build' terlebih dahulu untuk menghasilkan aset produksi."
             );
         }
