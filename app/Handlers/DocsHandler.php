@@ -52,6 +52,10 @@ final class DocsHandler extends Controller
      */
     public function apiGetJobdeskProgress(Request $request): Response
     {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         $data = $this->calculateJobdeskProgress();
 
         return Response::json([
@@ -65,6 +69,10 @@ final class DocsHandler extends Controller
      */
     public function apiToggleJobdeskTask(Request $request): Response
     {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         $taskId = (string) ($request->input('taskId') ?? '');
         $completed = (bool) $request->input('completed', false);
 
@@ -97,6 +105,10 @@ final class DocsHandler extends Controller
      */
     public function apiResetJobdeskProgress(Request $request): Response
     {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         $filePath = storage_path('app/jobdesk_progress.json');
         $stored = [
             'updated_at' => date('c'),

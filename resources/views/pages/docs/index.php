@@ -297,34 +297,49 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
         .doc-content ul.contains-task-list {
             list-style-type: none !important;
             padding-left: 0.25rem !important;
+            margin-top: 0.25rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+        .doc-content ul.contains-task-list ul.contains-task-list {
+            padding-left: 1.5rem !important;
+            border-left: 1px dashed rgba(99, 102, 241, 0.25) !important;
+            margin-left: 0.75rem !important;
+            margin-top: 0.4rem !important;
+            margin-bottom: 0.6rem !important;
         }
         .doc-content li.task-list-item {
             list-style-type: none !important;
+            margin-bottom: 0.45rem !important;
+            display: block !important;
+            width: 100% !important;
+        }
+        .doc-content .task-row {
             display: flex;
             align-items: flex-start;
             gap: 0.75rem;
             padding: 0.45rem 0.65rem;
             border-radius: 0.5rem;
-            margin-bottom: 0.35rem;
             transition: all 0.2s ease;
             background-color: rgba(255, 255, 255, 0.015);
             border: 1px solid rgba(255, 255, 255, 0.03);
             cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
         }
-        .doc-content li.task-list-item:hover {
+        .doc-content .task-row:hover {
             background-color: rgba(99, 102, 241, 0.08);
             border-color: rgba(99, 102, 241, 0.25);
             transform: translateX(2px);
         }
-        .doc-content li.task-list-item input[type="checkbox"] {
+        .doc-content .task-row input[type="checkbox"] {
             margin-top: 0.35rem;
             cursor: pointer;
         }
-        .doc-content li.task-list-item.is-task-done {
+        .doc-content .task-row.is-task-done {
             background-color: rgba(16, 185, 129, 0.04) !important;
             border-color: rgba(16, 185, 129, 0.15) !important;
         }
-        .doc-content li.task-list-item.is-task-done .task-content-text {
+        .doc-content .task-row.is-task-done .task-content-text {
             text-decoration: line-through;
             opacity: 0.5;
             color: #94a3b8;
@@ -1164,12 +1179,49 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                 cb.className = 'checkbox checkbox-primary checkbox-sm shrink-0 cursor-pointer mt-1 transition-all duration-200';
 
                 const parentLi = cb.closest('li');
-                if (parentLi) {
-                    parentLi.classList.add('task-list-item');
-                    if (task.completed) {
-                        parentLi.classList.add('is-task-done');
-                    } else {
-                        parentLi.classList.remove('is-task-done');
+                if (!parentLi) return;
+                parentLi.classList.add('task-list-item');
+
+                // Bungkus checkbox dan teks saudara sekandungnya ke dalam .task-row jika belum dibungkus
+                if (!cb.closest('.task-row')) {
+                    const taskRow = document.createElement('div');
+                    taskRow.className = `task-row ${task.completed ? 'is-task-done' : ''}`;
+
+                    // Pindahkan checkbox ke dalam taskRow
+                    parentLi.insertBefore(taskRow, cb);
+                    taskRow.appendChild(cb);
+
+                    // Buat wrapper teks
+                    const textSpan = document.createElement('span');
+                    textSpan.className = 'task-content-text flex-1 leading-relaxed text-slate-200';
+
+                    // Pindahkan semua node teks/inline sebelum <ul> ke dalam textSpan
+                    const childNodes = Array.from(parentLi.childNodes);
+                    for (const node of childNodes) {
+                        if (node === taskRow) continue;
+                        if (node.tagName && (node.tagName.toLowerCase() === 'ul' || node.tagName.toLowerCase() === 'ol')) {
+                            // Biarkan child <ul> tetap di parentLi di bawah taskRow!
+                            break;
+                        }
+                        textSpan.appendChild(node);
+                    }
+                    taskRow.appendChild(textSpan);
+
+                    // Klik pada baris task otomatis mentrigger checkbox
+                    taskRow.addEventListener('click', (e) => {
+                        if (e.target !== cb && !e.target.closest('a') && !e.target.closest('button')) {
+                            cb.checked = !cb.checked;
+                            cb.dispatchEvent(new Event('change'));
+                        }
+                    });
+                } else {
+                    const existingRow = cb.closest('.task-row');
+                    if (existingRow) {
+                        if (task.completed) {
+                            existingRow.classList.add('is-task-done');
+                        } else {
+                            existingRow.classList.remove('is-task-done');
+                        }
                     }
                 }
 
@@ -1179,13 +1231,13 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                     cb.addEventListener('change', async (e) => {
                         const isChecked = e.target.checked;
                         const taskId = e.target.getAttribute('data-task-id');
-                        const li = e.target.closest('li');
+                        const row = cb.closest('.task-row');
 
-                        if (li) {
+                        if (row) {
                             if (isChecked) {
-                                li.classList.add('is-task-done');
+                                row.classList.add('is-task-done');
                             } else {
-                                li.classList.remove('is-task-done');
+                                row.classList.remove('is-task-done');
                             }
                         }
 
