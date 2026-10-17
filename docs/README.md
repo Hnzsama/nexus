@@ -55,11 +55,11 @@ docs/
    - Audit Operasional: Abuse Penguncian Kursi (Troll Booking & Seat Hoarding)
    - Matriks Evaluasi Mitigasi Arsitektur
 8. [Bab 8: Pembagian Jobdesk & Roadmap Tim Teknis (4 Orang)](/docs/08-jobdesk-team)
-   - Matriks Tanggung Jawab & Diagram Kolaborasi (Mermaid)
-   - Jobdesk & Checklist Sub-Task: **Aku** (Core Backend & DB Architect)
-   - Jobdesk & Checklist Sub-Task: **Ais** (Lead UI/UX & Frontend Design Specialist)
-   - Jobdesk & Checklist Sub-Task: **Pileyo** (Backend Integration & Payment Gateway Specialist)
-   - Jobdesk & Checklist Sub-Task: **Adrian** (Frontend Client Logic, Real-Time Engine & QA Specialist)
+   - Matriks Tanggung Jawab & Diagram Arsitektur Kerja (Mermaid)
+   - Jobdesk & Checklist Sub-Task: **Aku** (Lead Backend Architect & Payment Integration Engineer — 100% Backend)
+   - Jobdesk & Checklist Sub-Task: **Ais** (Lead UI/UX & Frontend Design Specialist — 100% Seluruh Tampilan Visual)
+   - Jobdesk & Checklist Sub-Task: **Adrian** (Frontend Client Logic & Interactive Runtime Engineer — Modular Vanilla JS & Snap.js)
+   - Jobdesk & Checklist Sub-Task: **Pileyo** (Quality Assurance, Security Auditing & DevOps Engineer — Stress Test, Idempotency & Server Ops)
    - Roadmap Milestone Mingguan & Deliverables Kunci
 
 

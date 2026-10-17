@@ -8,179 +8,228 @@ Sistem *Cinema Ticketing & Real-Time Seat Booking Engine* dikembangkan oleh tim 
 
 | No | Anggota | Peran / Spesialisasi Utama | Fokus Area & Tanggung Jawab Inti |
 | :---: | :--- | :--- | :--- |
-| 1 | **Aku** | **Tech Lead & Core Backend / Database Architect** | Arsitektur MVC, Skema Database 11 Tabel, Concurrency Engine (Pessimistic Locking & Canonical Sorting), Dual-Layer Expiry Lifecycle. |
-| 2 | **Ais** | **Lead UI/UX & Frontend Design Specialist** | Design System, Komponen DaisyUI 5, Denah Kursi Interaktif (Seating Grid), Layout Halaman, E-Ticket View, Visual Aesthetics & Micro-interactions. |
-| 3 | **Pileyo** | **Backend Integration & Payment Gateway Specialist** | Midtrans Snap API Engine, Webhook Idempoten & SHA-512 Signature, State Machine Status Transaksi, Form Request & Validasi. |
-| 4 | **Adrian** | **Frontend Client Logic, Real-Time Engine & QA Specialist** | Modular Vanilla JS (`BookingEngine`), Sinkronisasi Timer & Drift Jam Server, Integrasi `window.snap.pay`, Polling Kursi, Simulasi Race Condition & Testing. |
+| 1 | **Aku** | **Lead Backend Architect & Payment Integration Engineer** | **100% Seluruh Backend:** Skema Database 11 Tabel InnoDB, Concurrency Engine (*Pessimistic Locking* & *Canonical Sorting*), Dual-Layer Expiry Service, Integrasi Midtrans Snap API, Webhook Idempoten & Verifikasi SHA-512, serta State Machine Transaksi. |
+| 2 | **Ais** | **Lead UI/UX & Frontend Design Specialist** | **Seluruh Tampilan Visual & Desain:** Design System DaisyUI 5, Tipografi & Palet Warna Mewah, Denah Kursi Bioskop Interaktif (*Curved Screen* & 4 Status Visual), Floating Summary Card, Luxury E-Ticket View, serta Responsivitas Mobile/Desktop. |
+| 3 | **Adrian** | **Frontend Client Logic & Interactive Runtime Engineer** | **Logika Interaktif Browser:** Modular Vanilla JS (`BookingEngine.js`), Sinkronisasi Timer Presisi & Drift Jam Server, Integrasi `window.snap.pay`, Polling Ketersediaan Kursi, Dynamic Price Calculator, dan DOM Event Handler. |
+| 4 | **Pileyo** | **Quality Assurance (QA), Security Auditing & DevOps Engineer** | **Pengujian Sistem & Keandalan Operasional:** Stress Test Konkurensi (*Ticket War* Anti-Double-Booking), Uji Replay Webhook Idempoten, Audit Keamanan Signature SHA-512, Skenario Edge-Case Finansial, serta Deployment Server & Crontab Setup. |
 
 ---
 
-## 📌 MATRIKS TANGGUNG JAWAB & SUB-TASK DETAIL
+## 📌 MATRIKS TANGGUNG JAWAB & ARSITEKTUR KERJA
 
 ```mermaid
 flowchart TD
-    subgraph S1["1. CORE ARCHITECTURE & DATABASE (Aku)"]
+    subgraph S1["1. FULL BACKEND & PAYMENT ARCHITECTURE (Aku)"]
         direction TB
-        A1["Skema 11 Tabel & Migrasi"] --> A2["Pessimistic Locking (SELECT FOR UPDATE)"]
-        A2 --> A3["Canonical Sorting (Anti-Deadlock)"]
-        A3 --> A4["Dual-Layer Expiry Service"]
+        A1["Database 11 Tabel & Migrasi InnoDB"] --> A2["Concurrency: Pessimistic Locking & Canonical Sorting"]
+        A2 --> A3["Dual-Layer Expiry Engine & Cleanup Service"]
+        A3 --> A4["Midtrans Snap API (custom_expiry 540s)"]
+        A4 --> A5["Webhook Idempoten & SHA-512 Verification"]
+        A5 --> A6["Transaction State Machine & Ticket Generator"]
     end
 
     subgraph S2["2. UI/UX & VISUAL EXCELLENCE (Ais)"]
         direction TB
-        B1["Design System & DaisyUI 5 Theme"] --> B2["Denah Kursi Bioskop Interaktif"]
-        B2 --> B3["Modal Checkout & Luxury E-Ticket"]
-        B3 --> B4["Micro-animations & Mobile Layout"]
+        B1["Design System & Tema Gelap DaisyUI 5"] --> B2["Denah Kursi Bioskop (Curved Screen & 4 Status)"]
+        B2 --> B3["Floating Action Bar & Summary Card"]
+        B3 --> B4["Luxury Digital E-Ticket View"]
+        B4 --> B5["Micro-interactions, Modal Dialogs & Mobile UI"]
     end
 
-    subgraph S3["3. PAYMENT & WEBHOOK ENGINE (Pileyo)"]
+    subgraph S3["3. CLIENT-SIDE LOGIC & RUNTIME (Adrian)"]
         direction TB
-        C1["Midtrans Snap API (custom_expiry 540s)"] --> C2["Webhook Controller Idempoten"]
-        C2 --> C3["SHA-512 Signature Verification"]
-        C3 --> C4["State Machine Transisi Order"]
+        C1["Modular Vanilla JS (BookingEngine.js)"] --> C2["Countdown Timer Sync & Server Drift (Tserver - Tlocal)"]
+        C2 --> C3["Client Midtrans Snap.js (Popup & Callback Handler)"]
+        C3 --> C4["Dynamic Price Calculator & Max 6 Seats Limiter"]
+        C4 --> C5["Seat Poller & Real-time DOM Updater"]
     end
 
-    subgraph S4["4. CLIENT LOGIC & QA TESTING (Adrian)"]
+    subgraph S4["4. QA, SECURITY AUDIT & DEVOPS (Pileyo)"]
         direction TB
-        D1["Modular Vanilla JS (BookingEngine)"] --> D2["Countdown Timer Sync Server Drift"]
-        D2 --> D3["Client Snap.js Integration"]
-        D3 --> D4["Race Condition & Webhook Replay Testing"]
+        D1["Simulasi Concurrency Ticket War (50+ User Simultan)"] --> D2["Idempotent Webhook Replay Testing (5x Delivery)"]
+        D2 --> D3["Security Audit: SHA-512 Signature Tampering & Timing Attack"]
+        D3 --> D4["Financial Edge-Case Test (Payment Detik 539 vs Expire)"]
+        D4 --> D5["Deployment aaPanel, PHP 8.2+ Tuning & Crontab Setup"]
     end
 
-    S1 <==> S3
-    S2 <==> S4
-    S1 -. Kolaborasi .- S2
-    S3 -. Kolaborasi .- S4
+    S1 <==>|JSON API & Snap Token| S3
+    S2 <==>|Komponen DaisyUI & DOM Hook| S3
+    S1 -. Audit & Stress Test .- S4
+    S3 -. E2E Testing .- S4
 
     classDef default fill:#0f172a,stroke:#6366f1,stroke-width:1.5px,color:#f8fafc;
     classDef lead fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#ffffff;
     classDef ui fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#a7f3d0;
-    classDef pay fill:#451a03,stroke:#f59e0b,stroke-width:2px,color:#fef3c7;
+    classDef client fill:#172554,stroke:#38bdf8,stroke-width:2px,color:#e0f2fe;
     classDef qa fill:#3b0764,stroke:#c084fc,stroke-width:2px,color:#f3e8ff;
 
-    class A1,A2,A3,A4 lead;
-    class B1,B2,B3,B4 ui;
-    class C1,C2,C3,C4 pay;
-    class D1,D2,D3,D4 qa;
+    class A1,A2,A3,A4,A5,A6 lead;
+    class B1,B2,B3,B4,B5 ui;
+    class C1,C2,C3,C4,C5 client;
+    class D1,D2,D3,D4,D5 qa;
 ```
 
 ---
 
-## 1. 🛠️ AKU — Tech Lead & Core Backend / Database Architect
+## 1. 🛠️ AKU — Lead Backend Architect & Payment Integration Engineer
 
-Bertanggung jawab penuh atas fondasi sistem, integritas data, mitigasi konkurensi ekstrem, dan orkestrasi arsitektur Clean MVC.
+Memegang tanggung jawab penuh atas **100% sisi backend aplikasi**: skema database, proteksi race condition, seluruh endpoint API, integrasi Midtrans, penanganan webhook kriptografis, dan orkestrasi transaksi.
 
 ### Sub-Task & Checklist Pelaksanaan:
 
-#### A. Database Schema & Migration Engine (Bab 2)
-- [ ] Menyusun file migrasi untuk 11 tabel relasional InnoDB (`cinemas`, `studios`, `seats`, `movies`, `showtimes`, `orders`, `order_items`, `seat_holds`, `payments`, `tickets`, `users`).
-- [ ] Mengonfigurasi *composite index* performa tinggi pada `showtimes(movie_id, studio_id, start_time)` dan `seat_holds(showtime_id, seat_id, status)`.
-- [ ] Menegakkan aturan integritas referensial: `FOREIGN KEY` dengan `ON DELETE CASCADE / RESTRICT` yang presisi.
-- [ ] Menerapkan aturan arsitektur: Dilarang keras menambahkan kolom status `LOCKED/BOOKED` langsung pada master tabel `seats` (pelanggaran kardinalitas).
+#### A. Database Architecture & Migrations (Bab 2)
+- [ ] Menyusun berkas migrasi 11 tabel relasional InnoDB dengan strict types (`declare(strict_types=1);`):
+  - [ ] Tabel master: `cinemas`, `studios`, `seats`, `movies`, `showtimes`, `pricing_tiers`, `users`.
+  - [ ] Tabel transaksional: `orders`, `order_items`, `seat_holds`, `payment_logs`, `tickets`.
+- [ ] Menambahkan *Composite Indexes* berkinerja tinggi:
+  - [ ] `showtimes(movie_id, studio_id, start_time)`
+  - [ ] `seat_holds(showtime_id, seat_id, status)`
+  - [ ] `order_items(order_id, seat_id)`
+- [ ] Menegakkan integritas referensial: `FOREIGN KEY` dengan aturan `ON DELETE CASCADE / RESTRICT` yang tepat.
+- [ ] Menerapkan aturan integritas kardinalitas: Dilarang keras menaruh kolom status `LOCKED/BOOKED` langsung pada tabel master `seats`.
 
-#### B. Concurrency Control & Pessimistic Locking (Bab 4)
-- [ ] Mengimplementasikan *Canonical Sorting* (`seat_ids ASC`) sebelum membuka transaksi database untuk mengeliminasi risiko siklus *Deadlock* MySQL (`Error 1213`).
+#### B. Concurrency Control & Anti-Deadlock Locking Engine (Bab 4)
+- [ ] Mengimplementasikan *Canonical Sorting Order* (`seat_ids ASC`) sebelum membuka transaksi MySQL untuk meniadakan siklus *Deadlock* (`InnoDB Error 1213`).
 - [ ] Menulis query penguncian baris eksplisit: `SELECT * FROM seats WHERE id IN (...) ORDER BY id ASC FOR UPDATE`.
-- [ ] Membangun pengecekan ganda (*Double-check conflict*): Validasi bahwa tidak ada kursi yang berstatus `PAID` pada `order_items` atau `HELD` aktif pada `seat_holds`.
-- [ ] Mengonfigurasi parameter transaksi database: `SET innodb_lock_wait_timeout = 3` untuk mencegah antrean transaksi menggantung.
+- [ ] Melakukan pengecekan ganda (*Double-check conflict*):
+  - [ ] Validasi bahwa kursi belum berstatus `PAID` pada `order_items`.
+  - [ ] Validasi bahwa kursi tidak memiliki hold aktif yang belum kedaluwarsa pada `seat_holds`.
+- [ ] Mengonfigurasi parameter transaksi: `SET innodb_lock_wait_timeout = 3` guna memotong antrean transaksi yang tertahan.
 
-#### C. Dual-Layer Expiry Service & Lifecycle Cleanup (Bab 4 & Bab 7)
-- [ ] Mengatur masa berlaku hold lokal tepat **10 Menit (600 Detik)** pada kolom `seat_holds.expires_at`.
-- [ ] Membangun *Lazy Expiry Checker* pada saat query ketersediaan kursi dibaca.
-- [ ] Membangun perintah CLI / Cron job background: `php nexus seats:cleanup` untuk menyapu hold basi yang ditinggalkan pengguna.
-- [ ] Mengimplementasikan *Asymmetric Expiry Window*: Memastikan database hold (600s) memiliki *Safety Buffer* 60 detik lebih lama dari gateway Midtrans (540s).
+#### C. Dual-Layer Expiry Service & Scheduled Cleanup (Bab 4)
+- [ ] Menetapkan masa berlaku hold kursi di database lokal tepat **10 Menit (600 Detik)** pada `seat_holds.expires_at`.
+- [ ] Membangun *Lazy Expiry Checker* yang otomatis mengabaikan hold kedaluwarsa saat query baca ketersediaan kursi.
+- [ ] Membangun CLI command / scheduler: `php nexus seats:cleanup` untuk menyapu record hold kedaluwarsa secara berkala.
+- [ ] Memastikan *Asymmetric Expiry Buffer*: Hold database lokal (600 detik) bertahan 60 detik lebih lama dari gateway Midtrans (540 detik).
+
+#### D. Midtrans Snap API Server-Side Engine (Bab 1 & Bab 5)
+- [ ] Mengembangkan Service `MidtransService` untuk komunikasi HTTP aman ke endpoint Midtrans (`/snap/v1/transactions`).
+- [ ] Menyuntikkan parameter krusial `custom_expiry: { expiry_duration: 9, unit: 'minute' }` (540 detik) pada request Snap.
+- [ ] Membentuk payload transaksi Midtrans: `transaction_details`, `item_details`, `customer_details`, dan `expiry`.
+- [ ] Mengembalikan response `snap_token` dan `redirect_url` ke controller.
+
+#### E. Webhook Controller Idempoten & Kriptografi Signature SHA-512 (Bab 5)
+- [ ] Membangun endpoint `POST /payment/webhook` penerima notifikasi HTTP dari Midtrans.
+- [ ] Memvalidasi *Signature Key* kriptografis SHA-512:
+  $$\text{Signature} = \text{hash}('sha512', \text{order\_id} + \text{status\_code} + \text{gross\_amount} + \text{ServerKey})$$
+- [ ] Menggunakan fungsi `hash_equals()` anti-*timing attack*. Menolak request dengan HTTP 403 jika signature tidak sah.
+- [ ] Menerapkan **Idempotency Guard**: Jika `orders.status` sudah `PAID`, webhook susulan langsung mengembalikan HTTP 200 tanpa duplikasi pembuatan tiket.
+- [ ] Menyimpan seluruh payload raw webhook ke tabel `payment_logs` untuk audit jejak digital.
+
+#### F. State Machine & Order Status Transition Engine (Bab 3)
+- [ ] Memetakan notifikasi Midtrans (`settlement`, `capture`, `pending`, `deny`, `expire`, `cancel`) ke status internal `orders`.
+- [ ] Logika Sukses (`PAID`): Ubah status `orders` menjadi `PAID`, ubah `seat_holds` menjadi `CONVERTED`, dan terbitkan record ke tabel `tickets`.
+- [ ] Logika Gagal/Batal (`CANCELLED` / `EXPIRED`): Ubah `orders` menjadi `EXPIRED`, ubah status `seat_holds` menjadi `RELEASED` agar kursi langsung dapat dipesan orang lain.
+- [ ] Validasi input ketat dengan FormRequest (`CheckoutRequest`) menggunakan `declare(strict_types=1);`.
 
 ---
 
 ## 2. 🎨 AIS — Lead UI/UX & Frontend Design Specialist
 
-Bertanggung jawab penuh atas seluruh aspek antarmuka, tata letak visual, pengalaman pengguna (UX), keselarasan tema DaisyUI 5, denah kursi interaktif yang responsif, dan tampilan tiket digital.
+Bertanggung jawab penuh atas **seluruh aspek visual, antarmuka, estetika, dan tata letak halaman**: memastikan desain terlihat mewah (*luxury cinema feel*), menggunakan komponen DaisyUI 5, dan ramah pengguna di semua ukuran layar.
 
 ### Sub-Task & Checklist Pelaksanaan:
 
 #### A. Design System & DaisyUI 5 Theming (Bab 6)
-- [ ] Merancang tema gelap (*Dark Cinema Theme*) menggunakan warna harmonis HSL/Tailwind dan komponen resmi DaisyUI 5.
-- [ ] Mengonfigurasi tipografi modern via Google Fonts (*Plus Jakarta Sans* untuk UI, *JetBrains Mono* untuk timer & kode booking).
+- [ ] Mengonfigurasi tema gelap modern (*Dark Luxury Cinema Palette*) berbasis Tailwind CSS & DaisyUI 5.
+- [ ] Mengintegrasikan tipografi Google Fonts modern (*Plus Jakarta Sans* untuk UI umum, *JetBrains Mono* untuk timer, kode booking, dan harga).
 - [ ] Menstandarisasi komponen DaisyUI di seluruh halaman: `btn`, `card`, `badge`, `modal`, `alert`, `stats`, `fieldset`, `breadcrumbs`.
-- [ ] Meniadakan penggunaan tombol/komponen native mentah tanpa styling DaisyUI (sesuai aturan proyek).
+- [ ] Menegakkan aturan proyek: Tidak ada komponen native mentah tanpa styling DaisyUI & tidak ada inline SVG mentah (gunakan Lucide Icons `<i data-lucide="...">`).
 
-#### B. Denah Kursi Bioskop Interaktif (Interactive Seating Grid)
-- [ ] Merancang visual Layar Bioskop (*Screen Arc*) dengan efek gradient pencahayaan lengkung yang realistis.
-- [ ] Membangun matriks visual kursi bioskop (Baris A s/d G, Nomor 1 s/d 14) dengan 4 status visual kontras:
+#### B. Denah Kursi Bioskop Interaktif (*Interactive Seating Grid*)
+- [ ] Merancang visual Layar Bioskop (*Curved Cinema Screen Arc*) dengan aksen gradasi glow lengkung yang elegan.
+- [ ] Membangun denah grid kursi studio (Baris A s/d G, Nomor 1 s/d 14) dengan 4 status visual yang jelas:
   - [ ] **Available (Tersedia):** `btn-outline btn-neutral` dengan transisi hover halus.
-  - [ ] **Selected (Dipilih Pengguna):** `btn-primary shadow-lg scale-105` bersinar.
+  - [ ] **Selected (Dipilih Pengguna):** `btn-primary shadow-lg scale-105` bersinar terang.
   - [ ] **Held by Other (Sedang Di-hold Orang Lain):** `btn-warning cursor-not-allowed opacity-75`.
   - [ ] **Sold / Booked (Terjual):** `btn-error btn-disabled opacity-40`.
-- [ ] Merancang komponen Legenda Status Kursi (*Seating Legend Bar*) yang informatif di bagian bawah denah.
-- [ ] Menambahkan indikator lorong bioskop (*aisle gap*) dan penomoran baris yang proporsional di perangkat mobile & desktop.
+- [ ] Merancang Legenda Status Kursi (*Seating Legend Bar*) yang bersih dan mudah dipahami di bagian bawah denah.
+- [ ] Merancang tata letak lorong bioskop (*aisle gap*) dan penomoran baris yang tetap rapi pada layar smartphone kecil.
 
-#### C. Layout Halaman & Tiket Digital (Luxury E-Ticket)
-- [ ] Merancang Halaman Beranda / Katalog Film: Card poster film berestetika tinggi, badge rating usia (`SU`, `13+`, `17+`), info studio, dan jadwal jam tayang.
-- [ ] Merancang Bar Aksi Bawah (*Floating Checkout Summary Bar*): Ringkasan kursi yang dipilih, total harga dinamis, dan tombol `Lanjut ke Pembayaran`.
-- [ ] Merancang Halaman / Kartu Tiket Digital Mewah (*Luxury E-Ticket View*): Menampilkan Order Number, Barcode / QR Code SVG, Info Studio, Baris Kursi, dan Jam Tayang dengan desain elegan siap-cetak / siap-tunjuk di pintu bioskop.
-- [ ] Merancang komponen Modal Dialog konfirmasi pembatalan dan notifikasi alert error yang ramah pengguna.
-
----
-
-## 3. 💳 PILEYO — Backend Integration & Payment Gateway Specialist
-
-Bertanggung jawab penuh atas integrasi gateway pembayaran Midtrans Snap & Core API, validasi data formulir, penanganan webhook idempoten, dan orkestrasi mesin status transaksi.
-
-### Sub-Task & Checklist Pelaksanaan:
-
-#### A. Integrasi Midtrans Snap API Engine (Bab 1 & Bab 5)
-- [ ] Mengimplementasikan Service `MidtransService` untuk komunikasi HTTP ke endpoint Midtrans Snap (`/snap/v1/transactions`).
-- [ ] Mengonfigurasi parameter krusial `custom_expiry`: Menutup batas bayar Midtrans di detik ke-540 (9 Menit) guna mengamankan *Safety Buffer* 60 detik.
-- [ ] Menyusun payload JSON transaksi Midtrans secara lengkap: `transaction_details`, `item_details`, `customer_details`, dan `expiry`.
-- [ ] Menghandle response Snap Token (`token`) dan redirect URL untuk dikirimkan kembali ke client.
-
-#### B. Webhook Controller Idempoten & Kriptografi Signature SHA-512 (Bab 5)
-- [ ] Membuat endpoint webhook resmi: `POST /payment/webhook` yang siap menerima *notification payload* dari Midtrans.
-- [ ] Mengimplementasikan verifikasi signature kriptografis wajib:
-  $$\text{Signature} = \text{hash}('sha512', \text{order\_id} + \text{status\_code} + \text{gross\_amount} + \text{ServerKey})$$
-- [ ] Menerapkan pengecekan `hash_equals()` anti-*timing attack*. Menolak request dengan HTTP 403 jika signature tidak valid.
-- [ ] Menerapkan **Idempotent Handler**: Jika order sudah berstatus `PAID`, webhook susulan wajib langsung mereturn HTTP 200 tanpa mengeksekusi duplikasi saldo atau tiket ganda.
-
-#### C. State Machine & Lifecycle Transaksi (Bab 3)
-- [ ] Memetakan seluruh kombinasi status Midtrans (`settlement`, `capture:accept`, `pending`, `expire`, `cancel`, `deny`) ke dalam status internal `orders` dan `seat_holds`.
-- [ ] Menulis logika konversi otomatis: Ketika status `PAID`, ubah `seat_holds.status` menjadi `CONVERTED` dan entri record baru ke tabel `tickets`.
-- [ ] Menulis logika pelepasan otomatis: Ketika status `EXPIRED` atau `CANCELLED`, ubah `seat_holds.status` menjadi `RELEASED` agar kursi langsung kembali `AVAILABLE`.
-- [ ] Mengimplementasikan FormRequest validation (`CheckoutRequest`) dengan strict types pada input payload pengguna.
+#### C. Katalog Film, Floating Summary Bar & Luxury E-Ticket View
+- [ ] **Katalog Film & Jadwal:** Card poster film beresolusi tinggi, badge rating umur (`SU`, `13+`, `17+`), info studio, dan pilihan slot waktu tayang.
+- [ ] **Floating Checkout Summary Bar:** Bar melayang di bagian bawah layar yang merangkum kursi yang dipilih, kalkulasi total biaya, dan tombol aksi `Lanjut Pembayaran`.
+- [ ] **Luxury Digital E-Ticket View:** Desain tiket bioskop digital dengan layout elegan: judul film, studio badge, tanggal & jam tayang, deretan nomor kursi, Order ID, serta Barcode / QR Code siap-scan di pintu bioskop.
+- [ ] **Modal Dialogs & Feedback Alerts:** Desain modal DaisyUI untuk konfirmasi order, peringatan waktu hold tersisa sedikit, modal *Waktu Habis*, dan pesan error ramah pengguna.
 
 ---
 
-## 4. ⚡ ADRIAN — Frontend Client Logic, Real-Time Engine & QA Specialist
+## 3. ⚡ ADRIAN — Frontend Client Logic & Interactive Runtime Engineer
 
-Bertanggung jawab penuh atas logika JavaScript modular di sisi browser, sinkronisasi jam client dengan server, integrasi popup Midtrans Snap.js, pembaruan ketersediaan kursi secara dinamis, serta pengujian kualitas sistem secara brutal (*chaos testing*).
+Bertanggung jawab penuh atas **seluruh logika JavaScript modular di sisi browser**: interaksi pengguna, kalkulasi dinamis, sinkronisasi jam server, integrasi popup pembayaran Midtrans Snap.js, dan pembaruan visual secara real-time.
 
 ### Sub-Task & Checklist Pelaksanaan:
 
-#### A. Modular Client JavaScript Engine (Bab 6)
-- [ ] Mengembangkan modul Vanilla JS terpisah di `resources/js/modules/booking.js` tanpa framework berat (sesuai aturan proyek).
-- [ ] Mengelola state kursi lokal (*local selected seats state*): Batasi maksimal 6 kursi per satu transaksi untuk mencegah *seat hoarding*.
-- [ ] Mengikat event klik interaktif pada denah kursi buatan Ais: Toggle class visual dan update nilai total harga secara instan.
-- [ ] Mengirimkan request AJAX `POST /checkout/create-transaction` dengan payload JSON dan CSRF Token yang aman.
+#### A. Modular Client JavaScript Engine (`resources/js/modules/booking.js`)
+- [ ] Mengembangkan modul Vanilla JS terstruktur tanpa framework berat (React/Vue/Svelte dilarang sesuai aturan proyek).
+- [ ] Mengelola state lokal kursi:
+  - [ ] Simpan daftar kursi aktif yang diklik pengguna.
+  - [ ] Batasi pemilihan maksimal 6 kursi per sesi checkout untuk mencegah *seat hoarding*.
+- [ ] Dynamic Price Calculator: Hitung ulang subtotal, biaya layanan, dan grand total secara instan saat kursi dipilih/dibatalkan.
+- [ ] Mengikat interaksi DOM denah buatan Ais dengan state JavaScript (toggle styling kelas DaisyUI saat klik).
 
-#### B. Countdown Timer Presisi & Sinkronisasi Jam Server (Bab 6)
-- [ ] Menerima timestamp kadaluwarsa dari respons server (`expires_at_unix`).
-- [ ] Menghitung kompensasi perbedaan jam perangkat pengguna dengan server (*clock drift compensation*):
+#### B. Countdown Timer Presisi & Sinkronisasi Drift Jam Server (Bab 6)
+- [ ] Menangkap timestamp kedaluwarsa dari respons server (`expires_at_unix`).
+- [ ] Mengimplementasikan formula kompensasi perbedaan jam perangkat klien vs server (*clock drift compensation*):
   $$\Delta_{\text{drift}} = T_{\text{server}} - T_{\text{local\_client}}$$
-- [ ] Menjalankan visual countdown timer 10:00 $\rightarrow$ 00:00 yang akurat hingga satuan detik.
-- [ ] Membangun trigger auto-cancel: Begitu waktu habis, nonaktifkan form checkout, tampilkan modal *Waktu Habis*, dan refresh status kursi.
+  $$T_{\text{target}} = \text{expires\_at\_unix} - \Delta_{\text{drift}}$$
+- [ ] Menjalankan interval countdown timer 10:00 $\rightarrow$ 00:00 yang akurat hingga per milidetik.
+- [ ] Trigger otomatis saat timer habis (00:00):
+  - [ ] Kunci tombol pembayaran dan form.
+  - [ ] Tampilkan modal DaisyUI pemberitahuan *Waktu Pembayaran Habis*.
+  - [ ] Picu pembaruan status denah kursi agar kursi kembali berstatus *Available*.
 
-#### C. Integrasi Client Snap.js & Event Handlers (Bab 6)
-- [ ] Memuat script SDK resmi Midtrans Snap (`snap.js`) dengan data attribute client key yang tepat.
-- [ ] Memanggil popup pembayaran: `window.snap.pay(snapToken, callbacks)`.
-- [ ] Mengimplementasikan seluruh callback penting:
-  - [ ] `onSuccess(result)`: Redirect ke halaman E-Ticket dengan feedback visual sukses.
-  - [ ] `onPending(result)`: Tampilkan instruksi pembayaran Virtual Account / QRIS.
-  - [ ] `onError(result)`: Tampilkan notifikasi kegagalan pembayaran tanpa merusak UI.
-  - [ ] `onClose()`: Tetap pertahankan countdown timer selama sisa waktu hold masih berlaku.
+#### C. Integrasi Client-Side Midtrans Snap.js (Bab 6)
+- [ ] Memuat script resmi SDK Midtrans Snap (`snap.js`) dengan Client Key sandbox/production.
+- [ ] Mengirimkan request AJAX / Fetch API `POST /checkout/create-transaction` dengan CSRF token aman.
+- [ ] Memunculkan modal popup Snap: `window.snap.pay(snapToken, callbacks)`.
+- [ ] Menangani callback Midtrans secara lengkap:
+  - [ ] `onSuccess(result)`: Redirect ke halaman E-Ticket dengan notifikasi sukses.
+  - [ ] `onPending(result)`: Tampilkan instruksi pembayaran nomor VA / QRIS.
+  - [ ] `onError(result)`: Tampilkan pesan kegagalan dan berikan opsi coba ulang.
+  - [ ] `onClose()`: Pertahankan timer hold kursi selama sisa waktu 10 menit masih ada.
 
-#### D. Quality Assurance & Edge-Case Audit (Bab 7)
-- [ ] **Pengujian Konkurensi (Ticket War):** Menguji 2 tab browser / script curl yang menembak kursi yang sama di milidetik yang identik. Pastikan 1 sukses (HTTP 200) dan 1 ditolak (HTTP 409 Conflict).
-- [ ] **Pengujian Webhook Replay:** Menembakkan payload webhook yang sama sebanyak 5 kali berturut-turut. Pastikan tiket hanya terbit tepat 1 kali (*Idempotent Test*).
-- [ ] **Pengujian Timer Expiry:** Membiarkan transaksi melewati menit ke-10:00. Pastikan kursi kembali berstatus `AVAILABLE` dan dapat dipesan oleh akun lain.
+#### D. Real-Time Seat Poller
+- [ ] Mengembangkan mekanisme polling background ringan (misal: setiap 15–30 detik) ke endpoint cek status kursi.
+- [ ] Memperbarui status kursi yang baru saja di-hold atau dibeli oleh pengguna lain tanpa me-refresh seluruh halaman.
+
+---
+
+## 4. 🛡️ PILEYO — Quality Assurance (QA), Security Auditing & DevOps Engineer
+
+Bertanggung jawab penuh atas **keandalan sistem, pengujian beban konkurensi ekstrem (*ticket war*), audit keamanan transaksi, dan orkestrasi deployment server**.
+
+### Sub-Task & Checklist Pelaksanaan:
+
+#### A. Concurrency & Race Condition Stress Testing (*Ticket War Audit*)
+- [ ] Menyusun script automated test (menggunakan cURL / k6 / JMeter) untuk menyimulasikan 50+ request simultan yang menembak 1 kursi yang sama di milidetik identik.
+- [ ] Memverifikasi jaminan *Zero Double-Booking*:
+  - [ ] Tepat 1 request berhasil mendapatkan kursi (HTTP 200/201).
+  - [ ] Sisa 49 request lainnya tertolak secara konsisten dengan HTTP 409 Conflict tanpa menyebabkan *Deadlock Crash* pada MySQL.
+- [ ] Menguji efektivitas *Canonical Sorting Order* di bawah beban transaksi acak (misal user A memilih kursi [1, 2], user B memilih [2, 1]).
+
+#### B. Idempotency & Webhook Replay Attack Testing (Bab 5 & Bab 7)
+- [ ] Menembakkan payload webhook pembayaran yang sama sebanyak 5 kali berturut-turut.
+- [ ] Memverifikasi bahwa sistem hanya menerbitkan tepat 1 tiket dan tidak menduplikasi record pada database (*Idempotent Test*).
+- [ ] Menguji skenario notifikasi out-of-order: Memverifikasi sistem tidak membalikkan status `PAID` kembali ke `PENDING` jika webhook lama tiba terlambat.
+
+#### C. Security Auditing & Signature Verification Test
+- [ ] Menguji manipulasi payload: Mengubah `gross_amount` atau `order_id` pada webhook dan memverifikasi penolakan instan dengan HTTP 403 Forbidden.
+- [ ] Mengaudit keamanan header webhook dan memastikan tidak ada informasi sensitif (seperti Server Key) yang bocor ke log publik.
+- [ ] Memastikan seluruh input endpoint terlindungi dari serangan SQL Injection dan XSS.
+
+#### D. Skenario Uji Finansial Ekstrem (Bab 7)
+- [ ] **Late Payment Edge-Case:** Menyimulasikan pengguna membayar di detik ke-539, namun notifikasi webhook baru masuk di detik ke-610 (setelah database hold kedaluwarsa).
+- [ ] Memvalidasi pemicu *Auto-Refund Engine* atau flag investigasi admin untuk menangani selisih kas.
+
+#### E. Server Deployment, Environment & Crontab Setup
+- [ ] Mengonfigurasi lingkungan server aaPanel: PHP 8.2+ dengan ekstensi `pdo_mysql`, `bcmath`, `curl`, `mbstring`.
+- [ ] Menyiapkan cronjob server untuk menjalankan pembersihan hold kursi kedaluwarsa:
+  ```bash
+  * * * * * cd /home/Akuma/projects/mvc && php nexus seats:cleanup >> /dev/null 2>&1
+  ```
+- [ ] Mengonfigurasi symlink direktori storage: `php nexus storage:link`.
+- [ ] Mengatur Cloudflare Tunnel / SSL reverse proxy untuk memastikan webhook Midtrans dapat menjangkau server dengan HTTPS valid.
 
 ---
 
@@ -193,17 +242,17 @@ gantt
     section Fase 1: Fondasi & UI
     Skema DB & Concurrency Core (Aku)       :a1, 2026-10-18, 3d
     Design System & Denah Kursi (Ais)       :a2, 2026-10-18, 4d
-    section Fase 2: Integrasi API & JS
-    Midtrans Engine & Webhook (Pileyo)      :a3, after a1, 4d
+    section Fase 2: Integrasi & Logic
+    Midtrans API & Webhook Idempoten (Aku)  :a3, after a1, 3d
     Modular JS & Timer Drift (Adrian)       :a4, after a2, 4d
-    section Fase 3: E2E & Audit
-    Penggabungan Snap.js & Seating Grid     :a5, after a3, 3d
-    Stress Test Konkurensi & Audit Brutal   :a6, after a5, 3d
-    Peluncuran Produksi v1.0                :milestone, after a6, 0d
+    section Fase 3: E2E, QA & Audit
+    Penggabungan Snap.js & Seating Grid     :a5, after a3, 2d
+    Stress Test Konkurensi & Audit (Pileyo) :a6, after a5, 3d
+    Deployment Server & Peluncuran v1.0     :milestone, after a6, 0d
 ```
 
 | Fase | Target Luaran (Deliverables) | Penanggung Jawab Utama |
 | :--- | :--- | :--- |
-| **Fase 1: Fondasi & Desain** | Skema 11 tabel InnoDB siap, Pessimistic Lock teruji, Design System DaisyUI 5 selesai, denah kursi interaktif siap pakai. | **Aku** (DB) & **Ais** (UI/UX) |
-| **Fase 2: Integrasi Core** | Snap Token berhasil diterbitkan (custom_expiry 540s), Webhook idempoten terverifikasi SHA-512, modular Vanilla JS terhubung. | **Pileyo** (API) & **Adrian** (Client JS) |
-| **Fase 3: Pengujian & Rilis** | Alur end-to-end checkout hingga tiket terbit tervalidasi, lolos uji double-booking dan audit finansial, sistem siap dideploy. | **Seluruh Tim (Lead: Aku & Adrian)** |
+| **Fase 1: Fondasi & Desain** | Skema 11 tabel InnoDB siap, Pessimistic Lock teruji, Design System DaisyUI 5 selesai, denah visual kursi siap pakai. | **Aku** (DB & Concurrency) & **Ais** (UI/UX) |
+| **Fase 2: Integrasi & Logika** | Snap Token (custom_expiry 540s) terbit, Webhook idempoten tervalidasi SHA-512, Modular Vanilla JS & Countdown Timer aktif. | **Aku** (Full Backend) & **Adrian** (Client JS) |
+| **Fase 3: Pengujian & Rilis** | Alur end-to-end tervalidasi, lolos uji stres konkurensi *ticket war*, aman dari *replay attack*, cronjob aktif di server. | **Pileyo** (QA & DevOps) & **Seluruh Tim** |
