@@ -20,7 +20,8 @@ docs/
 ├── 04-seat-locking-timer.md           # Bab 4: Concurrency Control, Pessimistic Lock & Timer Sync
 ├── 05-endpoints-webhook.md            # Bab 5: Spesifikasi Endpoint, SHA-512 Signature & Webhook
 ├── 06-frontend-realtime.md            # Bab 6: Frontend DaisyUI Interactive Seating & Snap.js
-└── 07-critical-system-audit.md        # Bab 7: Audit Brutal, Edge-Cases Finansial & Mitigasi Konkret
+├── 07-critical-system-audit.md        # Bab 7: Audit Brutal, Edge-Cases Finansial & Mitigasi Konkret
+└── 08-jobdesk-team.md                 # Bab 8: Pembagian Jobdesk & Roadmap Tim Teknis (4 Orang)
 ```
 
 ---
@@ -53,6 +54,14 @@ docs/
    - Audit Konkurensi: Race Condition & Deadlock MySQL InnoDB
    - Audit Operasional: Abuse Penguncian Kursi (Troll Booking & Seat Hoarding)
    - Matriks Evaluasi Mitigasi Arsitektur
+8. [Bab 8: Pembagian Jobdesk & Roadmap Tim Teknis (4 Orang)](/docs/08-jobdesk-team)
+   - Matriks Tanggung Jawab & Diagram Kolaborasi (Mermaid)
+   - Jobdesk & Checklist Sub-Task: **Aku** (Core Backend & DB Architect)
+   - Jobdesk & Checklist Sub-Task: **Ais** (Lead UI/UX & Frontend Design Specialist)
+   - Jobdesk & Checklist Sub-Task: **Pileyo** (Backend Integration & Payment Gateway Specialist)
+   - Jobdesk & Checklist Sub-Task: **Adrian** (Frontend Client Logic, Real-Time Engine & QA Specialist)
+   - Roadmap Milestone Mingguan & Deliverables Kunci
+
 
 ---
 

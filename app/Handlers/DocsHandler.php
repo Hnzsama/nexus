@@ -120,6 +120,13 @@ final class DocsHandler extends Controller
                 'subtitle' => 'Edge-Cases Finansial & Solusi Konkret',
                 'icon' => 'shield-alert',
             ],
+            '08-jobdesk-team.md' => [
+                'order' => 8,
+                'slug' => '08-jobdesk-team',
+                'title' => 'Bab 8: Jobdesk & Roadmap Tim',
+                'subtitle' => 'Pembagian 4 Anggota & Checklist Sub-task',
+                'icon' => 'clipboard-list',
+            ],
         ];
 
         foreach ($files as $file) {
