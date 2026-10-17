@@ -236,19 +236,41 @@ Bertanggung jawab penuh atas **keandalan sistem, pengujian beban konkurensi ekst
 ## 📅 TIMELINE INTEGRASI & TAHAPAN KERJA (MILESTONES)
 
 ```mermaid
-gantt
-    title Roadmap Pengerjaan Tim Bioskop
-    dateFormat YYYY-MM-DD
-    section Fase 1: Fondasi & UI
-    Skema DB & Concurrency Core (Aku)       :a1, 2026-10-18, 3d
-    Design System & Denah Kursi (Ais)       :a2, 2026-10-18, 4d
-    section Fase 2: Integrasi & Logic
-    Midtrans API & Webhook Idempoten (Aku)  :a3, after a1, 3d
-    Modular JS & Timer Drift (Adrian)       :a4, after a2, 4d
-    section Fase 3: E2E, QA & Audit
-    Penggabungan Snap.js & Seating Grid     :a5, after a3, 2d
-    Stress Test Konkurensi & Audit (Pileyo) :a6, after a5, 3d
-    Deployment Server & Peluncuran v1.0     :milestone, after a6, 0d
+flowchart LR
+    subgraph F1["📌 FASE 1: FONDASI ARSITEKTUR & UI SYSTEM"]
+        direction TB
+        F1_A["<b>1. Database & Concurrency Core</b><br/>• Skema 11 Tabel InnoDB & Indexes<br/>• Pessimistic Locking & Canonical Sorting<br/><i>PIC: Aku (Target: 3 Hari)</i>"]
+        F1_B["<b>2. Design System & Interactive Seating</b><br/>• Tema DaisyUI 5 & Curved Screen Arc<br/>• Denah Kursi Bioskop 4 Status Visual<br/><i>PIC: Ais (Target: 4 Hari)</i>"]
+    end
+
+    subgraph F2["⚡ FASE 2: INTEGRASI CORE BACKEND & CLIENT JS"]
+        direction TB
+        F2_A["<b>3. Midtrans API & Webhook Engine</b><br/>• Snap API (custom_expiry 540s)<br/>• Webhook Idempoten & SHA-512<br/><i>PIC: Aku (Target: 3 Hari)</i>"]
+        F2_B["<b>4. Modular JS & Timer Sync</b><br/>• BookingEngine.js & Timer Drift Sync<br/>• Popup Snap.js & Event Callbacks<br/><i>PIC: Adrian (Target: 4 Hari)</i>"]
+    end
+
+    subgraph F3["🛡️ FASE 3: END-TO-END QA & DEPLOYMENT"]
+        direction TB
+        F3_A["<b>5. Integrasi Sistem & UI Hook</b><br/>• E2E Flow: Katalog -> Seat -> Snap -> Ticket<br/><i>PIC: Aku, Ais & Adrian (Target: 2 Hari)</i>"]
+        F3_B["<b>6. Stress Test & Security Audit</b><br/>• Concurrency Ticket War (50+ User)<br/>• Webhook Replay & Financial Edge-Cases<br/><i>PIC: Pileyo (Target: 3 Hari)</i>"]
+        F3_C["🚀 <b>7. Peluncuran Produksi (v1.0-PROD)</b><br/>• Deploy aaPanel, SSL Tunnel & Crontab Cleanup<br/><i>PIC: Pileyo & Seluruh Tim</i>"]
+    end
+
+    F1 ==>|Fondasi DB & Desain Siap| F2
+    F2 ==>|API & Client Logic Terhubung| F3
+
+    classDef default fill:#0f172a,stroke:#6366f1,stroke-width:1.5px,color:#f8fafc;
+    classDef f1 fill:#0b1329,stroke:#38bdf8,stroke-width:2px,color:#f0f9ff;
+    classDef f2 fill:#130e2e,stroke:#a855f7,stroke-width:2px,color:#faf5ff;
+    classDef f3 fill:#062319,stroke:#10b981,stroke-width:2px,color:#ecfdf5;
+    classDef nodeBox fill:#1e293b,stroke:#475569,stroke-width:1.5px,color:#e2e8f0;
+    classDef milestone fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#ffffff;
+
+    class F1 f1;
+    class F2 f2;
+    class F3 f3;
+    class F1_A,F1_B,F2_A,F2_B,F3_A,F3_B nodeBox;
+    class F3_C milestone;
 ```
 
 | Fase | Target Luaran (Deliverables) | Penanggung Jawab Utama |

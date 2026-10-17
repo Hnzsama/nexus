@@ -67,5 +67,11 @@ Router::get('/docs', [DocsHandler::class, 'index'])->name('docs.index');
 Router::get('/docs/{slug}', [DocsHandler::class, 'index'])->name('docs.show');
 Router::get('/api/docs/{slug}', [DocsHandler::class, 'apiGetDoc'])->name('api.docs.get');
 
+// API Pelacakan & Checklist Interaktif Jobdesk Tim (Penyimpanan JSON di storage/app/jobdesk_progress.json)
+Router::get('/api/docs-jobdesk/progress', [DocsHandler::class, 'apiGetJobdeskProgress'])->name('api.docs.jobdesk.progress');
+Router::post('/api/docs-jobdesk/toggle', [DocsHandler::class, 'apiToggleJobdeskTask'])->name('api.docs.jobdesk.toggle');
+Router::post('/api/docs-jobdesk/reset', [DocsHandler::class, 'apiResetJobdeskProgress'])->name('api.docs.jobdesk.reset');
+
+
 
 

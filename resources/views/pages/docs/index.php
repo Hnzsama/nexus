@@ -292,6 +292,53 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
             color: #ffffff !important;
             opacity: 1 !important;
         }
+
+        /* Interactive Jobdesk Checklist & Progress Dashboard */
+        .doc-content ul.contains-task-list {
+            list-style-type: none !important;
+            padding-left: 0.25rem !important;
+        }
+        .doc-content li.task-list-item {
+            list-style-type: none !important;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.45rem 0.65rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.35rem;
+            transition: all 0.2s ease;
+            background-color: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+        }
+        .doc-content li.task-list-item:hover {
+            background-color: rgba(99, 102, 241, 0.08);
+            border-color: rgba(99, 102, 241, 0.25);
+            transform: translateX(2px);
+        }
+        .doc-content li.task-list-item input[type="checkbox"] {
+            margin-top: 0.35rem;
+            cursor: pointer;
+        }
+        .doc-content li.task-list-item.is-task-done {
+            background-color: rgba(16, 185, 129, 0.04) !important;
+            border-color: rgba(16, 185, 129, 0.15) !important;
+        }
+        .doc-content li.task-list-item.is-task-done .task-content-text {
+            text-decoration: line-through;
+            opacity: 0.5;
+            color: #94a3b8;
+        }
+        .jobdesk-dashboard-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 15, 29, 0.98) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.7);
+            position: relative;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
@@ -476,6 +523,39 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
             <button>close</button>
         </form>
     </dialog>
+
+    <!-- Dialog Konfirmasi Reset Progress Jobdesk (DaisyUI Standard) -->
+    <dialog id="modal-reset-jobdesk" class="modal modal-bottom sm:modal-middle backdrop-blur-md">
+        <div class="modal-box bg-[#0c1222] border border-error/30 max-w-md shadow-2xl">
+            <div class="flex items-center gap-3 text-error mb-3">
+                <div class="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center shrink-0 border border-error/20">
+                    <svg class="w-5 h-5 text-error" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-base text-white">Reset Semua Checklist?</h3>
+                    <p class="text-xs text-base-content/60">Tindakan ini akan mengosongkan seluruh progress checklist di storage JSON.</p>
+                </div>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed mb-6">
+                Seluruh sub-task yang telah dicentang oleh <span class="text-primary font-bold">Aku</span>, <span class="text-success font-bold">Ais</span>, <span class="text-info font-bold">Adrian</span>, dan <span class="text-secondary font-bold">Pileyo</span> akan kembali menjadi 0%.
+            </p>
+            <div class="modal-action flex items-center justify-end gap-2">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-ghost text-slate-300">Batal</button>
+                </form>
+                <button type="button" id="btn-confirm-reset-jobdesk" class="btn btn-sm btn-error shadow-lg shadow-error/20 gap-1.5">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    <span>Ya, Reset Semua</span>
+                </button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <!-- Global Toast Container Notifikasi Realtime -->
+    <div id="docs-toast-container" class="toast toast-top toast-end z-50 p-4 pointer-events-none space-y-2"></div>
 
     <!-- Data Dictionary Embed (Seluruh teks markdown tersimpan untuk render instan 0ms) -->
     <script id="docs-data" type="application/json">
@@ -793,6 +873,11 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                 container.innerHTML = `<pre class="text-error p-4">${doc.content}</pre>`;
             }
 
+            // Inisialisasi Checklist Interaktif & Live Team Progress Dashboard khusus Bab 8
+            if (slug === '08-jobdesk-team') {
+                await initJobdeskInteractiveSystem();
+            }
+
             // Render Diagram Mermaid jika ada (non-blocking)
             if (window.mermaid) {
                 const mermaidEls = container.querySelectorAll('.mermaid');
@@ -837,6 +922,343 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                     console.warn('Lucide icon error:', err);
                 }
             }
+        }
+
+        // =========================================================================
+        // 🚀 INTERACTIVE JOBDESK & TEAM PROGRESS TRACKING ENGINE (JSON STORAGE)
+        // =========================================================================
+        let currentJobdeskData = null;
+
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('docs-toast-container');
+            if (!toastContainer) return;
+
+            const toast = document.createElement('div');
+            const alertClass = type === 'success' 
+                ? 'alert-success text-emerald-300 border-emerald-500/30' 
+                : (type === 'error' ? 'alert-error text-red-300 border-red-500/30' : 'alert-info text-sky-300 border-sky-500/30');
+            
+            const iconSvg = type === 'success' 
+                ? '<svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>'
+                : '<svg class="w-4 h-4 text-sky-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+
+            toast.className = `alert ${alertClass} alert-soft shadow-2xl py-2.5 px-4 text-xs font-semibold flex items-center gap-2 border bg-[#0b1222]/95 backdrop-blur-md rounded-lg pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0`;
+            toast.innerHTML = `${iconSvg}<span>${message}</span>`;
+
+            toastContainer.appendChild(toast);
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 350);
+            }, 2500);
+        }
+
+        async function initJobdeskInteractiveSystem() {
+            try {
+                // 1. Ambil data progress terkini dari storage/app/jobdesk_progress.json
+                const res = await fetch('/api/docs-jobdesk/progress', {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const json = await res.json();
+                if (json.status !== 'success') {
+                    console.error('Gagal memuat progress jobdesk:', json);
+                    return;
+                }
+
+                currentJobdeskData = json.data;
+
+                // 2. Render Team Progress Dashboard Card di bagian atas artikel bab 8
+                renderJobdeskDashboard(currentJobdeskData);
+
+                // 3. Pasang interactivity pada checkbox list di dalam artikel
+                setupInteractiveChecklists(currentJobdeskData);
+
+            } catch (err) {
+                console.error('Jobdesk init error:', err);
+            }
+        }
+
+        function renderJobdeskDashboard(data) {
+            // Hindari duplikasi dashboard
+            const existing = document.getElementById('jobdesk-team-dashboard');
+            if (existing) existing.remove();
+
+            const dashboardWrapper = document.createElement('div');
+            dashboardWrapper.id = 'jobdesk-team-dashboard';
+            dashboardWrapper.className = 'jobdesk-dashboard-card mb-8';
+
+            const stats = data.stats;
+            const aku = stats.members.aku;
+            const ais = stats.members.ais;
+            const adrian = stats.members.adrian;
+            const pileyo = stats.members.pileyo;
+
+            dashboardWrapper.innerHTML = `
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-white/10 mb-6">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <h2 class="text-lg font-extrabold text-white tracking-tight m-0 p-0 border-none">📊 Live Team Progress Dashboard</h2>
+                            <span class="badge badge-success badge-sm font-mono text-[10px] py-1 px-2">Storage JSON Active</span>
+                        </div>
+                        <p class="text-xs text-base-content/60 m-0">
+                            Checklist di bawah ini interaktif dan otomatis tersimpan ke <code class="font-mono text-primary text-[11px]">storage/app/jobdesk_progress.json</code>.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" id="btn-refresh-jobdesk" class="btn btn-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600/80 gap-1.5 h-8">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            <span>Sinkronkan</span>
+                        </button>
+                        <button type="button" id="btn-open-reset-jobdesk" class="btn btn-xs btn-outline btn-error gap-1.5 h-8">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            <span>Reset</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Overall Team Progress Bar -->
+                <div class="bg-black/30 p-4 rounded-xl border border-white/5 mb-6">
+                    <div class="flex items-center justify-between text-xs mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-white text-sm">Total Progress Tim Bioskop:</span>
+                            <span class="font-mono text-emerald-400 font-extrabold text-sm" id="stat-overall-percent">${stats.percent}%</span>
+                        </div>
+                        <span class="font-mono text-xs text-base-content/60" id="stat-overall-fraction">${stats.completed} dari ${stats.total} Sub-Task Selesai</span>
+                    </div>
+                    <progress id="stat-overall-progress" class="progress progress-primary w-full h-3.5 bg-slate-800" value="${stats.percent}" max="100"></progress>
+                </div>
+
+                <!-- 4 Member Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <!-- 1. Aku -->
+                    <div class="p-3.5 rounded-xl bg-slate-900/60 border border-primary/20 flex flex-col justify-between">
+                        <div class="mb-3">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-bold text-sm text-white">1. Aku</span>
+                                <span class="badge badge-primary badge-sm text-[10px] font-mono" id="stat-badge-aku">${aku.percent}%</span>
+                            </div>
+                            <p class="text-[11px] text-primary/80 font-medium leading-tight mb-2">Lead Backend & DB Architect</p>
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between text-[11px] font-mono text-base-content/60 mb-1">
+                                <span>Progress</span>
+                                <span id="stat-fraction-aku">${aku.completed} / ${aku.total}</span>
+                            </div>
+                            <progress id="stat-progress-aku" class="progress progress-primary w-full h-2 bg-slate-800" value="${aku.percent}" max="100"></progress>
+                        </div>
+                    </div>
+
+                    <!-- 2. Ais -->
+                    <div class="p-3.5 rounded-xl bg-slate-900/60 border border-success/20 flex flex-col justify-between">
+                        <div class="mb-3">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-bold text-sm text-white">2. Ais</span>
+                                <span class="badge badge-success badge-sm text-[10px] font-mono" id="stat-badge-ais">${ais.percent}%</span>
+                            </div>
+                            <p class="text-[11px] text-emerald-400/80 font-medium leading-tight mb-2">Lead UI/UX & Design Specialist</p>
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between text-[11px] font-mono text-base-content/60 mb-1">
+                                <span>Progress</span>
+                                <span id="stat-fraction-ais">${ais.completed} / ${ais.total}</span>
+                            </div>
+                            <progress id="stat-progress-ais" class="progress progress-success w-full h-2 bg-slate-800" value="${ais.percent}" max="100"></progress>
+                        </div>
+                    </div>
+
+                    <!-- 3. Adrian -->
+                    <div class="p-3.5 rounded-xl bg-slate-900/60 border border-info/20 flex flex-col justify-between">
+                        <div class="mb-3">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-bold text-sm text-white">3. Adrian</span>
+                                <span class="badge badge-info badge-sm text-[10px] font-mono" id="stat-badge-adrian">${adrian.percent}%</span>
+                            </div>
+                            <p class="text-[11px] text-sky-400/80 font-medium leading-tight mb-2">Frontend Client Logic & Runtime</p>
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between text-[11px] font-mono text-base-content/60 mb-1">
+                                <span>Progress</span>
+                                <span id="stat-fraction-adrian">${adrian.completed} / ${adrian.total}</span>
+                            </div>
+                            <progress id="stat-progress-adrian" class="progress progress-info w-full h-2 bg-slate-800" value="${adrian.percent}" max="100"></progress>
+                        </div>
+                    </div>
+
+                    <!-- 4. Pileyo -->
+                    <div class="p-3.5 rounded-xl bg-slate-900/60 border border-secondary/20 flex flex-col justify-between">
+                        <div class="mb-3">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-bold text-sm text-white">4. Pileyo</span>
+                                <span class="badge badge-secondary badge-sm text-[10px] font-mono" id="stat-badge-pileyo">${pileyo.percent}%</span>
+                            </div>
+                            <p class="text-[11px] text-purple-400/80 font-medium leading-tight mb-2">QA, Security Audit & DevOps</p>
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between text-[11px] font-mono text-base-content/60 mb-1">
+                                <span>Progress</span>
+                                <span id="stat-fraction-pileyo">${pileyo.completed} / ${pileyo.total}</span>
+                            </div>
+                            <progress id="stat-progress-pileyo" class="progress progress-secondary w-full h-2 bg-slate-800" value="${pileyo.percent}" max="100"></progress>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Pasang dashboard di awal container markdown
+            container.prepend(dashboardWrapper);
+
+            // Pasang event listener untuk tombol Refresh & Reset
+            document.getElementById('btn-refresh-jobdesk')?.addEventListener('click', async () => {
+                await initJobdeskInteractiveSystem();
+                showToast('Progress checklist berhasil disinkronkan dari server', 'info');
+            });
+
+            document.getElementById('btn-open-reset-jobdesk')?.addEventListener('click', () => {
+                const modal = document.getElementById('modal-reset-jobdesk');
+                if (modal) modal.showModal();
+            });
+        }
+
+        function updateDashboardStats(stats) {
+            if (!stats) return;
+
+            // Overall
+            const overallPercentEl = document.getElementById('stat-overall-percent');
+            const overallFractionEl = document.getElementById('stat-overall-fraction');
+            const overallProgressEl = document.getElementById('stat-overall-progress');
+
+            if (overallPercentEl) overallPercentEl.textContent = `${stats.percent}%`;
+            if (overallFractionEl) overallFractionEl.textContent = `${stats.completed} dari ${stats.total} Sub-Task Selesai`;
+            if (overallProgressEl) overallProgressEl.value = stats.percent;
+
+            // Members
+            const members = ['aku', 'ais', 'adrian', 'pileyo'];
+            members.forEach(m => {
+                const data = stats.members[m];
+                if (!data) return;
+
+                const badge = document.getElementById(`stat-badge-${m}`);
+                const fraction = document.getElementById(`stat-fraction-${m}`);
+                const progress = document.getElementById(`stat-progress-${m}`);
+
+                if (badge) badge.textContent = `${data.percent}%`;
+                if (fraction) fraction.textContent = `${data.completed} / ${data.total}`;
+                if (progress) progress.value = data.percent;
+            });
+        }
+
+        function setupInteractiveChecklists(data) {
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+            
+            checkboxes.forEach((cb, index) => {
+                const task = data.tasks[index];
+                if (!task) return;
+
+                cb.disabled = false;
+                cb.setAttribute('data-task-id', task.id);
+                cb.checked = Boolean(task.completed);
+                cb.className = 'checkbox checkbox-primary checkbox-sm shrink-0 cursor-pointer mt-1 transition-all duration-200';
+
+                const parentLi = cb.closest('li');
+                if (parentLi) {
+                    parentLi.classList.add('task-list-item');
+                    if (task.completed) {
+                        parentLi.classList.add('is-task-done');
+                    } else {
+                        parentLi.classList.remove('is-task-done');
+                    }
+                }
+
+                // Pasang event change jika belum dipasang
+                if (!cb.hasAttribute('data-bound')) {
+                    cb.setAttribute('data-bound', 'true');
+                    cb.addEventListener('change', async (e) => {
+                        const isChecked = e.target.checked;
+                        const taskId = e.target.getAttribute('data-task-id');
+                        const li = e.target.closest('li');
+
+                        if (li) {
+                            if (isChecked) {
+                                li.classList.add('is-task-done');
+                            } else {
+                                li.classList.remove('is-task-done');
+                            }
+                        }
+
+                        await sendTaskToggle(taskId, isChecked);
+                    });
+                }
+            });
+        }
+
+        async function sendTaskToggle(taskId, completed) {
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                const res = await fetch('/api/docs-jobdesk/toggle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ taskId, completed })
+                });
+
+                const json = await res.json();
+                if (json.status === 'success') {
+                    currentJobdeskData = json.data;
+                    updateDashboardStats(json.data.stats);
+                    showToast(`Tersimpan di JSON: ${completed ? 'Sub-task Selesai' : 'Sub-task Dibatalkan'} (${json.data.stats.percent}% Total)`, 'success');
+                } else {
+                    showToast(json.message || 'Gagal menyimpan status checklist', 'error');
+                }
+            } catch (err) {
+                console.error('Error toggling task:', err);
+                showToast('Gagal terhubung ke server untuk menyimpan checklist', 'error');
+            }
+        }
+
+        // Listener untuk tombol konfirmasi reset
+        const btnConfirmReset = document.getElementById('btn-confirm-reset-jobdesk');
+        if (btnConfirmReset) {
+            btnConfirmReset.addEventListener('click', async () => {
+                try {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                    const res = await fetch('/api/docs-jobdesk/reset', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        currentJobdeskData = json.data;
+                        const modal = document.getElementById('modal-reset-jobdesk');
+                        if (modal) modal.close();
+
+                        // Uncheck semua checkbox di UI
+                        const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+                        checkboxes.forEach(cb => {
+                            cb.checked = false;
+                            const li = cb.closest('li');
+                            if (li) li.classList.remove('is-task-done');
+                        });
+
+                        updateDashboardStats(json.data.stats);
+                        showToast('Seluruh progress checklist berhasil direset ke 0%', 'info');
+                    }
+                } catch (err) {
+                    console.error('Error resetting progress:', err);
+                    showToast('Gagal mereset progress', 'error');
+                }
+            });
         }
 
         function updateChapterPager(slug) {
