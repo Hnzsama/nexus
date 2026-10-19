@@ -72,6 +72,39 @@ Router::get('/api/docs-jobdesk/progress', [DocsHandler::class, 'apiGetJobdeskPro
 Router::post('/api/docs-jobdesk/toggle', [DocsHandler::class, 'apiToggleJobdeskTask'])->name('api.docs.jobdesk.toggle');
 Router::post('/api/docs-jobdesk/reset', [DocsHandler::class, 'apiResetJobdeskProgress'])->name('api.docs.jobdesk.reset');
 
+use App\Handlers\SwaggerHandler;
 
+// Rute Dokumentasi RESTful API Swagger UI & OpenAPI 3.0
+Router::get('/swagger', [SwaggerHandler::class, 'index'])->name('swagger.index');
+Router::get('/swagger/scalar', [SwaggerHandler::class, 'scalar'])->name('swagger.scalar');
+Router::get('/swagger/openapi.json', [SwaggerHandler::class, 'spec'])->name('swagger.json');
 
+use App\Handlers\CinemaController;
+use App\Handlers\CheckoutController;
+use App\Handlers\PaymentWebhookController;
 
+// =========================================================================
+// CINEMA TICKETING, CONCURRENCY & PAYMENT API (BAB 1 - 5)
+// =========================================================================
+
+// 1. Katalog Film & Slot Jadwal Tayang
+Router::get('/api/movies', [CinemaController::class, 'movies'])->name('api.movies.index');
+Router::get('/api/movies/{slug}', [CinemaController::class, 'movieDetail'])->name('api.movies.detail');
+Router::get('/api/cinema/seed', [CinemaController::class, 'seed'])->name('api.cinema.seed');
+
+// 2. Denah Kursi Real-Time (Visual 4 Status & Lazy Expiry)
+Router::get('/api/showtimes/{id}/seats', [CinemaController::class, 'seats'])->name('api.showtimes.seats');
+
+// 3. Checkout Transaksi Atomik & Perolehan Midtrans Snap Token
+Router::post('/api/checkout/create-transaction', [CheckoutController::class, 'createTransaction'])->name('api.checkout.create');
+Router::post('/checkout/create-transaction', [CheckoutController::class, 'createTransaction'])->name('checkout.create');
+Router::get('/api/orders/{orderNumber}', [CheckoutController::class, 'orderDetail'])->name('api.orders.detail');
+
+// 4. Webhook Notifikasi Midtrans Idempoten & Verifikasi SHA-512
+Router::post('/api/payment/webhook', [PaymentWebhookController::class, 'handle'])->name('api.payment.webhook');
+Router::post('/payment/webhook', [PaymentWebhookController::class, 'handle'])->name('payment.webhook');
+
+// =========================================================================
+// 5. AUTHENTICATION & USER PROFILE ENGINE
+// =========================================================================
+require __DIR__ . '/auth.php';

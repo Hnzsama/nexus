@@ -80,6 +80,18 @@ abstract class Migration
 
                 // 3. Tipe data boolean MySQL -> INTEGER di SQLite
                 $normalized = preg_replace('/\bTINYINT\s*\(\s*1\s*\)/i', 'INTEGER', $normalized) ?? $normalized;
+
+                // 4. ENUM(...) -> VARCHAR(50) di SQLite
+                $normalized = preg_replace('/\bENUM\s*\([^)]+\)/i', 'VARCHAR(50)', $normalized) ?? $normalized;
+
+                // 5. JSON -> TEXT di SQLite
+                $normalized = preg_replace('/\bJSON\b/i', 'TEXT', $normalized) ?? $normalized;
+
+                // 6. ON UPDATE CURRENT_TIMESTAMP -> Hapus di SQLite
+                $normalized = preg_replace('/\bON\s+UPDATE\s+CURRENT_TIMESTAMP\b/i', '', $normalized) ?? $normalized;
+
+                // 7. UNSIGNED -> Hapus di SQLite
+                $normalized = preg_replace('/\bUNSIGNED\b/i', '', $normalized) ?? $normalized;
                 break;
 
             case 'pgsql':

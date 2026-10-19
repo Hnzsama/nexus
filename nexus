@@ -52,6 +52,9 @@ match ($command) {
     'make:model' => makeModel($argument),
     'make:request' => makeRequest($argument),
     'make:migration' => makeMigration($argument),
+    'seats:cleanup' => runSeatsCleanup(),
+    'cinema:seed', 'db:seed' => runCinemaSeed(),
+    'swagger:generate' => runSwaggerGenerate(),
     'help', 'list', '--help', '-h' => showHelp(),
     default => showUnknownCommand($command),
 };
@@ -539,7 +542,9 @@ function showHelp(): void
         'migrate'               => 'Jalankan seluruh migrasi database yang pending',
         'migrate:rollback'      => 'Batalkan (rollback) batch migrasi database terakhir',
         'migrate:status'        => 'Tampilkan tabel status seluruh file migrasi',
-        'storage:link'          => 'Buat symbolic link public/storage -> storage/app/public',
+        'seats:cleanup'         => 'Sapu bersih hold kursi kedaluwarsa & batalkan order unpaid',
+        'cinema:seed'           => 'Isi database dengan master bioskop, studio, 98 kursi, film & jadwal',
+        'swagger:generate'      => 'Generate spesifikasi OpenAPI 3.0 / Swagger JSON statis',
         'help'                  => 'Tampilkan menu bantuan ini',
     ];
 
@@ -547,6 +552,90 @@ function showHelp(): void
         printf("  " . COLOR_CYAN . "%-24s" . COLOR_RESET . " %s\n", $cmd, $desc);
     }
     echo "\n";
+}
+
+/**
+ * Jalankan seeder database bioskop (Cinemas, Studios, Seats, Movies, Showtimes).
+ */
+function runCinemaSeed(): void
+{
+    printBanner();
+    echo COLOR_CYAN . "🌱 Menjalankan Cinema Database Seeder...\n" . COLOR_RESET;
+    try {
+        // Jalankan migrasi terlebih dahulu untuk memastikan skema ada
+        $migrator = new Migrator();
+        $migrator->run();
+
+        require_once __DIR__ . '/database/seeders/CinemaSeeder.php';
+        \Database\Seeders\CinemaSeeder::run();
+
+        echo COLOR_GREEN . "✔ Cinema Seeder berhasil dieksekusi!\n" . COLOR_RESET;
+        echo "  - Master bioskop, studio, kursi (A1 s/d G14), film, dan jadwal tayang siap digunakan.\n\n";
+    } catch (\Throwable $e) {
+        echo COLOR_RED . "✖ Gagal menjalankan seeder: " . $e->getMessage() . COLOR_RESET . "\n";
+        exit(1);
+    }
+}
+
+/**
+ * Scheduled worker untuk menyapu record hold kedaluwarsa & expire order unpaid.
+ */
+function runSeatsCleanup(): void
+{
+    printBanner();
+    echo COLOR_CYAN . "🧹 Menjalankan Dual-Layer Expiry Cleanup Engine (Bab 4)...\n" . COLOR_RESET;
+    try {
+        $bookingService = new \App\Services\BookingService();
+        $result = $bookingService->cleanupExpiredHolds();
+
+        echo COLOR_GREEN . "✔ Pembersihan selesai:" . COLOR_RESET . "\n";
+        echo "  - Seat Holds Dilepaskan (RELEASED) : " . COLOR_BOLD . $result['released_holds'] . COLOR_RESET . "\n";
+        echo "  - Orders Kedaluwarsa (EXPIRED)    : " . COLOR_BOLD . $result['expired_orders'] . COLOR_RESET . "\n\n";
+    } catch (\Throwable $e) {
+        echo COLOR_RED . "✖ Gagal menjalankan cleanup: " . $e->getMessage() . COLOR_RESET . "\n";
+        exit(1);
+    }
+}
+
+/**
+ * Generate OpenAPI 3.0 static JSON file.
+ */
+function runSwaggerGenerate(): void
+{
+    printBanner();
+    echo COLOR_CYAN . "⚡ Memulai pemindaian anotasi & atribut OpenAPI 3.0...\n" . COLOR_RESET;
+    try {
+        $configPath = base_path('config/swagger.php');
+        $config = file_exists($configPath) ? require $configPath : [];
+
+        $scanPaths = $config['scan_paths'] ?? [
+            base_path('app/OpenApi'),
+            base_path('app/Handlers'),
+        ];
+        $outputFile = $config['output_file'] ?? public_path('openapi.json');
+
+        $validPaths = array_values(array_filter($scanPaths, fn($p) => is_dir((string)$p) || file_exists((string)$p)));
+
+        $generator = new \OpenApi\Generator();
+        $openapi = $generator->generate($validPaths);
+
+        if (!$openapi) {
+            echo COLOR_RED . "✖ Gagal meng-generate spesifikasi OpenAPI.\n" . COLOR_RESET;
+            exit(1);
+        }
+
+        $json = $openapi->toJson();
+        $dir = dirname($outputFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        file_put_contents($outputFile, $json);
+
+        echo COLOR_GREEN . "✔ OpenAPI JSON berhasil di-generate:" . COLOR_RESET . " " . $outputFile . "\n\n";
+    } catch (\Throwable $e) {
+        echo COLOR_RED . "✖ Terjadi kesalahan: " . $e->getMessage() . COLOR_RESET . "\n";
+        exit(1);
+    }
 }
 
 function showUnknownCommand(string $cmd): void

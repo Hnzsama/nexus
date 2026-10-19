@@ -339,6 +339,51 @@ class Request
         return $this->validated[$key] ?? $default;
     }
 
+    protected ?object $resolvedUser = null;
+
+    /**
+     * Dapatkan user yang sedang login dari session / token jika ada.
+     */
+    public function user(): ?object
+    {
+        if ($this->resolvedUser !== null) {
+            return $this->resolvedUser;
+        }
+
+        // 1. Cek $_SESSION['user']
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+            @session_start();
+        }
+
+        $userData = $_SESSION['user'] ?? null;
+        if ($userData) {
+            $this->resolvedUser = is_object($userData) ? $userData : (object) $userData;
+            return $this->resolvedUser;
+        }
+
+        // 2. Cek $_SESSION['user_id']
+        $userId = $_SESSION['user_id'] ?? null;
+        if ($userId && class_exists(\App\Models\User::class)) {
+            $user = \App\Models\User::find($userId);
+            if ($user) {
+                $this->resolvedUser = $user;
+                return $this->resolvedUser;
+            }
+        }
+
+        // 3. Cek Authorization Bearer Token
+        $token = $this->bearerToken();
+        if ($token && class_exists(\App\Models\User::class)) {
+            $user = \App\Models\User::where('api_token', $token)->first();
+            if ($user) {
+                $this->resolvedUser = $user;
+                return $this->resolvedUser;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Parsing isi JSON body jika ada.
      */

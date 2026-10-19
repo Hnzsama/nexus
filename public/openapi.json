@@ -1,0 +1,1266 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Nexus Framework API",
+        "description": "Dokumentasi interaktif OpenAPI 3.0 / Swagger UI untuk RESTful API Nexus MVC Framework.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/",
+            "description": "Local Environment (Current Host)"
+        },
+        {
+            "url": "https://persons-copies-intelligent-freelance.trycloudflare.com",
+            "description": "Cloudflare Tunnel (Testing Server)"
+        }
+    ],
+    "paths": {
+        "/api/ping": {
+            "get": {
+                "tags": [
+                    "General"
+                ],
+                "summary": "Heartbeat & Framework Status Check",
+                "description": "Mengembalikan status kesehatan sistem, runtime PHP, environment aktif, dan IP client.",
+                "operationId": "9dfdff9def67d8661ae7369588f7ad8c",
+                "responses": {
+                    "200": {
+                        "description": "Koneksi berhasil dan service aktif.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "framework": {
+                                            "type": "string",
+                                            "example": "Nexus MVC"
+                                        },
+                                        "environment": {
+                                            "type": "string",
+                                            "example": "local"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2026-10-19T23:59:00+07:00"
+                                        },
+                                        "client_ip": {
+                                            "type": "string",
+                                            "example": "127.0.0.1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/version": {
+            "get": {
+                "tags": [
+                    "General"
+                ],
+                "summary": "Nexus API Version",
+                "description": "Mengembalikan versi API v1 saat ini.",
+                "operationId": "7066a32f98042b48ccd43dd9d68be22a",
+                "responses": {
+                    "200": {
+                        "description": "Informasi versi API.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "version": {
+                                            "type": "string",
+                                            "example": "1.0.0"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/submit": {
+            "post": {
+                "tags": [
+                    "General"
+                ],
+                "summary": "Contoh POST Request Payload",
+                "description": "Endpoint demonstrasi pengiriman data form / JSON payload dengan proteksi CSRF di web browser.",
+                "operationId": "4898bfefec76f3ef7e5f9c6c3c3136a8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Pesan Baru"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "Halo dari Swagger UI!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Data payload berhasil diterima oleh server.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data formulir berhasil diterima!"
+                                        },
+                                        "payload": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentication & Accounts"
+                ],
+                "summary": "Registrasi Pengguna Baru",
+                "description": "Mendaftarkan akun baru ke sistem bioskop dengan password terenkripsi bcrypt, membuat token verifikasi email, dan mengembalikan data pengguna serta API Bearer Token.",
+                "operationId": "7ba62f5547092dd363b15dfcec145a42",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Ahmad Fauzi"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "fauzi@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Rahasia123!"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "081234567890"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Akun berhasil didaftarkan.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registrasi berhasil! Silakan verifikasi email Anda."
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "e2b10a9f..."
+                                        },
+                                        "verification_token": {
+                                            "type": "string",
+                                            "example": "VERIF-982134"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Email sudah terdaftar sebelumnya."
+                    },
+                    "422": {
+                        "description": "Validasi formulir registrasi gagal."
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication & Accounts"
+                ],
+                "summary": "Login Pengguna & Mendapatkan API Token",
+                "description": "Memverifikasi kredensial email dan password pengguna, lalu menerbitkan Bearer Token dan sesi login aktif.",
+                "operationId": "498d9bca9b065c6eec37275ce4e08846",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "fauzi@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Rahasia123!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login berhasil.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login berhasil."
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "e2b10a9f..."
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Kredensial tidak valid (email atau password salah)."
+                    },
+                    "422": {
+                        "description": "Parameter email atau password tidak lengkap."
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication & Accounts"
+                ],
+                "summary": "Logout Pengguna",
+                "description": "Menghapus sesi login aktif di server dan mengosongkan API Token pengguna.",
+                "operationId": "5e09f31c42692e79e4c4f32fab5d4582",
+                "responses": {
+                    "200": {
+                        "description": "Logout berhasil.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Anda telah berhasil logout."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Pengguna belum terautentikasi (Unauthenticated)."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/forgot-password": {
+            "post": {
+                "tags": [
+                    "Authentication & Accounts"
+                ],
+                "summary": "Permohonan Lupa Password (Forgot Password)",
+                "description": "Membuat token reset password sementara (berlaku 15 menit) dan mengirimkan instruksi pemulihan ke email pengguna.",
+                "operationId": "06c18105230934cf1f08fdac3fe0f948",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "fauzi@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token instruksi reset password berhasil diterbitkan.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Instruksi reset password telah dikirim ke email Anda."
+                                        },
+                                        "reset_token": {
+                                            "type": "string",
+                                            "example": "RESET-718293"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "example": "2026-10-20 01:30:00"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Alamat email tidak terdaftar di sistem."
+                    }
+                }
+            }
+        },
+        "/api/auth/reset-password": {
+            "post": {
+                "tags": [
+                    "Authentication & Accounts"
+                ],
+                "summary": "Eksekusi Reset Password Baru",
+                "description": "Memvalidasi kode token reset password dan masa berlakunya, lalu mengganti password akun dengan hash baru.",
+                "operationId": "90020665d6e8ba01d72180d2803db177",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "token",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "fauzi@example.com"
+                                    },
+                                    "token": {
+                                        "type": "string",
+                                        "example": "718293"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "PasswordBaru2026!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password berhasil direset.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password berhasil diperbarui. Silakan login kembali."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Token salah atau telah kedaluwarsa."
+                    },
+                    "404": {
+                        "description": "Pengguna tidak ditemukan."
+                    }
+                }
+            }
+        },
+        "/api/auth/verify-email": {
+            "post": {
+                "tags": [
+                    "Authentication & Accounts"
+                ],
+                "summary": "Verifikasi Alamat Email",
+                "description": "Memvalidasi kode verifikasi email pengguna dan menandai akun terverifikasi (email_verified_at).",
+                "operationId": "cd703d35ca4b39fec430a511df317392",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "fauzi@example.com"
+                                    },
+                                    "token": {
+                                        "type": "string",
+                                        "example": "982134"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email berhasil diverifikasi.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email Anda telah berhasil diverifikasi."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Kode token verifikasi tidak valid atau tidak cocok."
+                    }
+                }
+            }
+        },
+        "/api/auth/resend-verification": {
+            "post": {
+                "tags": [
+                    "Authentication & Accounts"
+                ],
+                "summary": "Kirim Ulang Kode Verifikasi Email",
+                "description": "Menghasilkan kode verifikasi baru jika kode sebelumnya kedaluwarsa atau hilang.",
+                "operationId": "b62bc62d6c8b9a1450878ecf35da7eae",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "fauzi@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Kode verifikasi baru berhasil dibuat.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Kode verifikasi baru berhasil dikirimkan."
+                                        },
+                                        "verification_token": {
+                                            "type": "string",
+                                            "example": "492810"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Email pengguna sudah terverifikasi sebelumnya."
+                    },
+                    "404": {
+                        "description": "Email tidak ditemukan."
+                    }
+                }
+            }
+        },
+        "/api/checkout/create-transaction": {
+            "post": {
+                "tags": [
+                    "Transactions & Checkout"
+                ],
+                "summary": "Atomic Checkout & Request Midtrans Snap Token",
+                "description": "Mengunci kursi secara atomik dengan Canonical Sorting (seat_ids ASC), Row Locking (SELECT ... FOR UPDATE), validasi double-check conflict, dan request Snap Token Midtrans dengan masa berlaku 540 detik.",
+                "operationId": "b0b3ddcffceb0452c4c9c3dbf23af03b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "showtime_id",
+                                    "seat_ids",
+                                    "customer_name",
+                                    "customer_email",
+                                    "customer_phone"
+                                ],
+                                "properties": {
+                                    "showtime_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "seat_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 12
+                                        },
+                                        "example": [
+                                            11,
+                                            12
+                                        ]
+                                    },
+                                    "customer_name": {
+                                        "type": "string",
+                                        "example": "Budi Santoso"
+                                    },
+                                    "customer_email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "budi@example.com"
+                                    },
+                                    "customer_phone": {
+                                        "type": "string",
+                                        "example": "081234567890"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Transaksi berhasil dibuat dan Snap Token diperoleh.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "order_number": {
+                                            "type": "string",
+                                            "example": "NX-20261020-8F92A"
+                                        },
+                                        "snap_token": {
+                                            "type": "string",
+                                            "example": "d3b07384-d113-4a11-8a9d-mock"
+                                        },
+                                        "redirect_url": {
+                                            "type": "string",
+                                            "example": "https://app.sandbox.midtrans.com/snap/v2/vtweb/..."
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "example": "2026-10-20 00:50:00"
+                                        },
+                                        "expires_in_seconds": {
+                                            "type": "integer",
+                                            "example": 600
+                                        },
+                                        "total_amount": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 100000
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Pengguna belum terotentikasi (Unauthorized). Silakan login terlebih dahulu."
+                    },
+                    "409": {
+                        "description": "Konflik: Kursi telah dipesan atau sedang di-hold pelanggan lain.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Kursi pilihan Anda sedang dipilih pengguna lain."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Parameter formulir checkout tidak valid."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/orders/{orderNumber}": {
+            "get": {
+                "tags": [
+                    "Transactions & Checkout"
+                ],
+                "summary": "Detail Transaksi & Tiket Resmi",
+                "description": "Mengecek status pembayaran order dan mengambil daftar tiket resmi yang telah diterbitkan (QR Token & Barcode Code).",
+                "operationId": "f3dccab3eb2c85297eaf1dc851da108b",
+                "parameters": [
+                    {
+                        "name": "orderNumber",
+                        "in": "path",
+                        "description": "Nomor Order Transaksi (NEXUS-*)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "NX-20261020-8F92A"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail order dan tiket.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "order": {
+                                            "type": "object"
+                                        },
+                                        "payment": {
+                                            "type": "object"
+                                        },
+                                        "tickets": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Order tidak ditemukan."
+                    }
+                }
+            }
+        },
+        "/api/movies": {
+            "get": {
+                "tags": [
+                    "Cinema & Movies"
+                ],
+                "summary": "Katalog Film Sedang Tayang",
+                "description": "Mengambil daftar film yang sedang tayang (status NOW_PLAYING) lengkap dengan poster, rating usia, dan durasi.",
+                "operationId": "a546c85dc640c183909dec1b5faf827f",
+                "responses": {
+                    "200": {
+                        "description": "Daftar film berhasil diambil.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "title": {
+                                                        "type": "string",
+                                                        "example": "Avatar: The Way of Water"
+                                                    },
+                                                    "slug": {
+                                                        "type": "string",
+                                                        "example": "avatar-the-way-of-water"
+                                                    },
+                                                    "duration_minutes": {
+                                                        "type": "integer",
+                                                        "example": 192
+                                                    },
+                                                    "age_rating": {
+                                                        "type": "string",
+                                                        "example": "13+"
+                                                    },
+                                                    "poster_url": {
+                                                        "type": "string",
+                                                        "example": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "NOW_PLAYING"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/movies/{slug}": {
+            "get": {
+                "tags": [
+                    "Cinema & Movies"
+                ],
+                "summary": "Detail Film & Jadwal Tayang",
+                "description": "Mengambil informasi lengkap film beserta slot jadwal tayang (showtimes) di seluruh bioskop & studio.",
+                "operationId": "01c29a92bbbb12e49a9498c0e0163dd5",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug unik film",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "avatar-the-way-of-water"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail film dan jadwal tayang.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "movie": {
+                                            "type": "object"
+                                        },
+                                        "showtimes": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Film tidak ditemukan."
+                    }
+                }
+            }
+        },
+        "/api/showtimes/{id}/seats": {
+            "get": {
+                "tags": [
+                    "Seats & Real-Time Engine"
+                ],
+                "summary": "Peta Kursi Real-Time (Visual 4 Status)",
+                "description": "Mengambil denah grid kursi bioskop dengan status terkini (AVAILABLE, HELD, BOOKED, SELECTED) dan waktu sisa hold (Lazy Expiry).",
+                "operationId": "b2afddbb6eed100b51a4f7e217fc5971",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID Jadwal Tayang (Showtime ID)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data denah kursi real-time berhasil diambil.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Jadwal tayang tidak ditemukan."
+                    }
+                }
+            }
+        },
+        "/api/payment/webhook": {
+            "post": {
+                "tags": [
+                    "Payment & Webhook Engine"
+                ],
+                "summary": "Midtrans Webhook HTTP Notification Handler",
+                "description": "Endpoint penerima notifikasi callback dari Midtrans. Memvalidasi Signature SHA-512 dengan hash_equals() anti-timing attack, menjalankan jaminan Idempotensi, mentransisikan state order (PAID/EXPIRED/CANCELLED), menerbitkan tiket resmi, dan melepas kursi jika transaksi batal.",
+                "operationId": "1e113f5b954bfa9bcbefdfa73d67f1ac",
+                "requestBody": {
+                    "description": "Payload JSON standar notifikasi Midtrans",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "order_id",
+                                    "status_code",
+                                    "gross_amount",
+                                    "signature_key",
+                                    "transaction_status"
+                                ],
+                                "properties": {
+                                    "order_id": {
+                                        "type": "string",
+                                        "example": "NX-20261020-8F92A"
+                                    },
+                                    "status_code": {
+                                        "type": "string",
+                                        "example": "200"
+                                    },
+                                    "gross_amount": {
+                                        "type": "string",
+                                        "example": "100000.00"
+                                    },
+                                    "signature_key": {
+                                        "type": "string",
+                                        "example": "a1b2c3d4e5f6...sha512"
+                                    },
+                                    "transaction_status": {
+                                        "type": "string",
+                                        "example": "settlement"
+                                    },
+                                    "fraud_status": {
+                                        "type": "string",
+                                        "example": "accept"
+                                    },
+                                    "payment_type": {
+                                        "type": "string",
+                                        "example": "qris"
+                                    },
+                                    "transaction_id": {
+                                        "type": "string",
+                                        "example": "9a8b7c6d-midtrans-guid"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Webhook berhasil diproses secara idempoten.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pembayaran berhasil diselesaikan dan tiket telah diterbitkan."
+                                        },
+                                        "order_status": {
+                                            "type": "string",
+                                            "example": "PAID"
+                                        },
+                                        "idempotent": {
+                                            "type": "boolean",
+                                            "example": false
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Payload webhook tidak lengkap atau tidak valid."
+                    },
+                    "403": {
+                        "description": "Security Alert: Signature Key SHA-512 tidak cocok (Unauthorized)."
+                    },
+                    "404": {
+                        "description": "Nomor Order tidak ditemukan di database."
+                    }
+                }
+            }
+        },
+        "/api/user/profile": {
+            "get": {
+                "tags": [
+                    "User Profile & Settings"
+                ],
+                "summary": "Ambil Data Profil Pengguna",
+                "description": "Mengambil data profil lengkap pengguna yang sedang login (nama, email, no telepon, avatar, status verifikasi) serta ringkasan total tiket bioskop yang pernah dipesan.",
+                "operationId": "d1b5fa232936620ecfc65f395d049eaa",
+                "responses": {
+                    "200": {
+                        "description": "Profil berhasil diambil.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        },
+                                        "total_orders": {
+                                            "type": "integer",
+                                            "example": 4
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Pengguna belum terautentikasi (Unauthenticated)."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "User Profile & Settings"
+                ],
+                "summary": "Perbarui Data Profil & Avatar Pengguna",
+                "description": "Memperbarui nama lengkap, nomor telepon, dan file avatar foto profil yang disimpan ke storage public.",
+                "operationId": "7fd7bab50df0cdf8b80943936adc419d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Ahmad Fauzi"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "081298765432"
+                                    },
+                                    "avatar": {
+                                        "description": "File gambar JPG/PNG profil",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil berhasil diperbarui.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Profil berhasil diperbarui."
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "422": {
+                        "description": "Validasi form profil gagal."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user/change-password": {
+            "post": {
+                "tags": [
+                    "User Profile & Settings"
+                ],
+                "summary": "Ganti Password Akun (Edit Password)",
+                "description": "Mengubah password pengguna setelah memverifikasi kecocokan password lama (current_password).",
+                "operationId": "62eacac4cb5ce758537ae69093f889ae",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "new_password"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "RahasiaLama123!"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "RahasiaBaru2026!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password berhasil diubah.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password berhasil diperbarui."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Password saat ini salah."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "422": {
+                        "description": "Format password baru tidak valid."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "http",
+                "description": "Masukkan API Token yang didapatkan setelah login (contoh: Bearer e2b10a9f...)",
+                "name": "Authorization",
+                "in": "header",
+                "bearerFormat": "API Token",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication & Accounts",
+            "description": "Sistem autentikasi: Register, Login, Logout, Forgot Password, Reset Password, & Email Verification"
+        },
+        {
+            "name": "User Profile & Settings",
+            "description": "Pengelolaan profil pengguna, upload avatar, dan ganti password akun"
+        },
+        {
+            "name": "Transactions & Checkout",
+            "description": "Pessimistic locking, Canonical sorting anti-deadlock, dan Midtrans Snap token"
+        },
+        {
+            "name": "Seats & Real-Time Engine",
+            "description": "Denah kursi real-time, status dinamis (Available, Held, Booked), dan Lazy Expiry"
+        },
+        {
+            "name": "Cinema & Movies",
+            "description": "Katalog film, sinopsis, poster, dan slot jadwal tayang bioskop"
+        },
+        {
+            "name": "Payment & Webhook Engine",
+            "description": "Webhook Midtrans idempoten, verifikasi kriptografi SHA-512, dan penerbitan tiket"
+        },
+        {
+            "name": "General",
+            "description": "System health, heartbeat & framework metadata endpoints"
+        }
+    ]
+}

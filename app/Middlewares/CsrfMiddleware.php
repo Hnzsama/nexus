@@ -24,6 +24,9 @@ class CsrfMiddleware implements MiddlewareInterface
      */
     protected array $except = [
         'api/*',
+        'payment/*',
+        'payment/webhook',
+        'checkout/*',
     ];
 
     public function handle(Request $request, Closure $next): Response

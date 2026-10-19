@@ -72,6 +72,7 @@
             $isHome = ($currentUri === '/');
             $isUsers = str_starts_with((string)$currentUri, '/users');
             $isDocs = str_starts_with((string)$currentUri, '/docs');
+            $isSwagger = str_starts_with((string)$currentUri, '/swagger');
         ?>
         <div class="navbar-center hidden sm:flex">
             <ul class="menu menu-horizontal bg-base-200/90 rounded-box p-1 border border-base-content/10 gap-1 text-xs" id="main-nav">
@@ -92,6 +93,13 @@
                         <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
                         <span>Dokumentasi</span>
                         <span class="badge badge-accent badge-xs font-mono">MD</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= route('swagger.index') ?>" data-nav="swagger" class="<?= $isSwagger ? 'bg-primary text-primary-content font-bold shadow-md shadow-primary/25' : 'text-base-content/70 hover:text-base-content hover:bg-base-content/10 font-medium' ?> gap-2 transition-all">
+                        <i data-lucide="file-code" class="w-3.5 h-3.5"></i>
+                        <span>Swagger API</span>
+                        <span class="badge badge-secondary badge-xs font-mono">OA3</span>
                     </a>
                 </li>
             </ul>

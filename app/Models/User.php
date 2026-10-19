@@ -26,7 +26,13 @@ class User extends Model
         'name',
         'email',
         'password',
+        'phone',
         'avatar',
+        'email_verified_at',
+        'verification_token',
+        'reset_password_token',
+        'reset_password_expires_at',
+        'api_token',
     ];
 
     /**
@@ -38,5 +44,54 @@ class User extends Model
             return \Core\Storage\Storage::disk('public')->url($this->avatar);
         }
         return null;
+    }
+
+    /**
+     * Cek apakah email user sudah diverifikasi.
+     */
+    public function isEmailVerified(): bool
+    {
+        return !empty($this->email_verified_at);
+    }
+
+    /**
+     * Tandai email sebagai terverifikasi.
+     */
+    public function markEmailAsVerified(): bool
+    {
+        $this->email_verified_at = date('Y-m-d H:i:s');
+        $this->verification_token = null;
+        return $this->save();
+    }
+
+    /**
+     * Generate API Bearer token baru untuk user.
+     */
+    public function generateApiToken(): string
+    {
+        $token = bin2hex(random_bytes(32));
+        $this->api_token = $token;
+        $this->save();
+        return $token;
+    }
+
+    /**
+     * Kembalikan representasi array yang aman tanpa mengekspos hash password atau token rahasia.
+     *
+     * @return array<string, mixed>
+     */
+    public function toSafeArray(): array
+    {
+        return [
+            'id' => (int) $this->id,
+            'name' => (string) $this->name,
+            'email' => (string) $this->email,
+            'phone' => (string) ($this->phone ?? ''),
+            'avatar' => (string) ($this->avatar ?? ''),
+            'avatar_url' => $this->avatarUrl(),
+            'is_verified' => $this->isEmailVerified(),
+            'email_verified_at' => $this->email_verified_at,
+            'created_at' => (string) ($this->created_at ?? ''),
+        ];
     }
 }

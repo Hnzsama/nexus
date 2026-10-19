@@ -19,16 +19,17 @@ class AuthMiddleware implements MiddlewareInterface
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+            @session_start();
         }
 
-        // Cek keberadaan user session atau bearer token
-        $isLoggedIn = !empty($_SESSION['user_id']) || $request->bearerToken() !== null;
+        // Cek keberadaan user aktif (dari session atau Bearer token)
+        $user = $request->user();
 
-        if (!$isLoggedIn) {
-            if ($request->wantsJson()) {
+        if (!$user) {
+            if ($request->wantsJson() || $request->isJson() || str_starts_with($request->uri(), '/api/')) {
                 return Response::json([
+                    'status' => 'error',
                     'error' => 'Unauthenticated',
                     'message' => 'Silakan login terlebih dahulu untuk mengakses sumber daya ini.'
                 ], 401);
