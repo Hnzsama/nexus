@@ -89,7 +89,14 @@ final class DocsHandler extends Controller
         $stored['tasks'][$taskId] = $completed;
         $stored['updated_at'] = date('c');
 
-        $this->writeProgressFile($filePath, $stored);
+        try {
+            $this->writeProgressFile($filePath, $stored);
+        } catch (\Throwable $e) {
+            return Response::json([
+                'status' => 'error',
+                'message' => 'Gagal menyimpan checklist: ' . $e->getMessage(),
+            ], 500);
+        }
 
         $data = $this->calculateJobdeskProgress();
 
@@ -115,7 +122,14 @@ final class DocsHandler extends Controller
             'tasks' => [],
         ];
 
-        $this->writeProgressFile($filePath, $stored);
+        try {
+            $this->writeProgressFile($filePath, $stored);
+        } catch (\Throwable $e) {
+            return Response::json([
+                'status' => 'error',
+                'message' => 'Gagal mereset checklist: ' . $e->getMessage(),
+            ], 500);
+        }
 
         $data = $this->calculateJobdeskProgress();
 
@@ -268,14 +282,16 @@ final class DocsHandler extends Controller
     {
         $dir = dirname($filePath);
         if (!is_dir($dir)) {
-            @mkdir($dir, 0755, true);
+            @mkdir($dir, 0775, true);
+            @chmod($dir, 0775);
         }
 
-        file_put_contents(
-            $filePath,
-            (string) json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-            LOCK_EX
-        );
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $written = @file_put_contents($filePath, (string) $json, LOCK_EX);
+        if ($written === false) {
+            throw new \RuntimeException("Izin akses ditolak saat menulis ke {$filePath}. Pastikan folder storage dapat ditulis oleh web server (chown -R www:www storage atau chmod -R 775 storage).");
+        }
+        @chmod($filePath, 0664);
     }
 
     /**

@@ -1260,17 +1260,24 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                     body: JSON.stringify({ taskId, completed })
                 });
 
-                const json = await res.json();
-                if (json.status === 'success') {
+                let json = null;
+                try {
+                    json = await res.json();
+                } catch (e) {
+                    // Response bukan JSON valid (misal 500 fatal/permission error HTML)
+                }
+
+                if (res.ok && json && json.status === 'success') {
                     currentJobdeskData = json.data;
                     updateDashboardStats(json.data.stats);
                     showToast(`Tersimpan di JSON: ${completed ? 'Sub-task Selesai' : 'Sub-task Dibatalkan'} (${json.data.stats.percent}% Total)`, 'success');
                 } else {
-                    showToast(json.message || 'Gagal menyimpan status checklist', 'error');
+                    const errMsg = (json && json.message) ? json.message : `Gagal menyimpan checklist (Server HTTP ${res.status}: ${res.statusText})`;
+                    showToast(errMsg, 'error');
                 }
             } catch (err) {
                 console.error('Error toggling task:', err);
-                showToast('Gagal terhubung ke server untuk menyimpan checklist', 'error');
+                showToast(err.message || 'Gagal terhubung ke server untuk menyimpan checklist', 'error');
             }
         }
 
@@ -1289,8 +1296,14 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
                         }
                     });
 
-                    const json = await res.json();
-                    if (json.status === 'success') {
+                    let json = null;
+                    try {
+                        json = await res.json();
+                    } catch (e) {
+                        // Response bukan JSON
+                    }
+
+                    if (res.ok && json && json.status === 'success') {
                         currentJobdeskData = json.data;
                         const modal = document.getElementById('modal-reset-jobdesk');
                         if (modal) modal.close();
@@ -1305,6 +1318,9 @@ $activeDoc = $activeDoc ?? ($documents[$activeSlug] ?? null);
 
                         updateDashboardStats(json.data.stats);
                         showToast('Seluruh progress checklist berhasil direset ke 0%', 'info');
+                    } else {
+                        const errMsg = (json && json.message) ? json.message : `Gagal mereset progress (Server HTTP ${res.status})`;
+                        showToast(errMsg, 'error');
                     }
                 } catch (err) {
                     console.error('Error resetting progress:', err);
