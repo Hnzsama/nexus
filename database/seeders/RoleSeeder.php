@@ -37,15 +37,16 @@ class RoleSeeder
             ],
         ];
 
+        $now = date('Y-m-d H:i:s');
         foreach ($roles as $r) {
             $stmt = $pdo->prepare("SELECT id FROM roles WHERE id = ? OR name = ?");
             $stmt->execute([$r['id'], $r['name']]);
             if (!$stmt->fetch()) {
                 $ins = $pdo->prepare("
                     INSERT INTO roles (id, name, display_name, description, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+                    VALUES (?, ?, ?, ?, ?, ?)
                 ");
-                $ins->execute([$r['id'], $r['name'], $r['display_name'], $r['description']]);
+                $ins->execute([$r['id'], $r['name'], $r['display_name'], $r['description'], $now, $now]);
             }
         }
 

@@ -12,6 +12,7 @@ class CinemaSeeder
     public static function run(?PDO $pdo = null): void
     {
         $pdo ??= Connection::getPdo();
+        $now = date('Y-m-d H:i:s');
 
         // 1. Seed Cinemas
         $cinemas = [
@@ -35,9 +36,9 @@ class CinemaSeeder
             if (!$stmt->fetch()) {
                 $ins = $pdo->prepare("
                     INSERT INTO cinemas (code, name, city, address, is_active, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+                    VALUES (?, ?, ?, ?, 1, ?, ?)
                 ");
-                $ins->execute([$c['code'], $c['name'], $c['city'], $c['address']]);
+                $ins->execute([$c['code'], $c['name'], $c['city'], $c['address'], $now, $now]);
             }
         }
 
@@ -56,9 +57,9 @@ class CinemaSeeder
             if (!$stmt->fetch()) {
                 $ins = $pdo->prepare("
                     INSERT INTO studios (cinema_id, name, studio_type, capacity, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+                    VALUES (?, ?, ?, ?, ?, ?)
                 ");
-                $ins->execute([$cinemaId, $s['name'], $s['studio_type'], $s['capacity']]);
+                $ins->execute([$cinemaId, $s['name'], $s['studio_type'], $s['capacity'], $now, $now]);
             }
         }
 
@@ -77,9 +78,9 @@ class CinemaSeeder
             if (!$stmt->fetch()) {
                 $ins = $pdo->prepare("
                     INSERT INTO pricing_tiers (code, name, multiplier, surcharge, description, is_active, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, 'Tier Tarif Resmi', 1, datetime('now'), datetime('now'))
+                    VALUES (?, ?, ?, ?, 'Tier Tarif Resmi', 1, ?, ?)
                 ");
-                $ins->execute([$p['code'], $p['name'], $p['multiplier'], $p['surcharge']]);
+                $ins->execute([$p['code'], $p['name'], $p['multiplier'], $p['surcharge'], $now, $now]);
             }
         }
 
@@ -90,12 +91,12 @@ class CinemaSeeder
             if ($cnt === 0) {
                 $seatIns = $pdo->prepare("
                     INSERT INTO seats (studio_id, row_label, seat_number, seat_type, is_active, created_at)
-                    VALUES (?, ?, ?, ?, 1, datetime('now'))
+                    VALUES (?, ?, ?, ?, 1, ?)
                 ");
                 foreach ($rows as $row) {
                     for ($num = 1; $num <= 14; $num++) {
                         $type = in_array($row, ['F', 'G'], true) ? 'SWEETBOX' : 'STANDARD';
-                        $seatIns->execute([$stId, $row, $num, $type]);
+                        $seatIns->execute([$stId, $row, $num, $type, $now]);
                     }
                 }
             }
@@ -141,11 +142,12 @@ class CinemaSeeder
             if (!$stmt->fetch()) {
                 $ins = $pdo->prepare("
                     INSERT INTO movies (title, slug, synopsis, duration_minutes, age_rating, poster_url, trailer_url, status, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
                 $ins->execute([
                     $m['title'], $m['slug'], $m['synopsis'], $m['duration_minutes'],
-                    $m['age_rating'], $m['poster_url'], $m['trailer_url'], $m['status']
+                    $m['age_rating'], $m['poster_url'], $m['trailer_url'], $m['status'],
+                    $now, $now
                 ]);
             }
         }
@@ -173,9 +175,9 @@ class CinemaSeeder
                 if (!$check->fetch()) {
                     $ins = $pdo->prepare("
                         INSERT INTO showtimes (movie_id, studio_id, start_time, end_time, base_price, status, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, 'ACTIVE', datetime('now'), datetime('now'))
+                        VALUES (?, ?, ?, ?, ?, 'ACTIVE', ?, ?)
                     ");
-                    $ins->execute([$mId, $stTarget, $startTime, $endTime, $slot['price']]);
+                    $ins->execute([$mId, $stTarget, $startTime, $endTime, $slot['price'], $now, $now]);
                 }
             }
         }

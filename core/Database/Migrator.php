@@ -88,6 +88,50 @@ class Migrator
     }
 
     /**
+     * Hapus seluruh tabel pada database dan jalankan ulang seluruh migrasi dari awal.
+     *
+     * @return array<int, string> Daftar file migrasi yang berhasil dijalankan
+     */
+    public function fresh(): array
+    {
+        $this->dropAllTables();
+        return $this->run();
+    }
+
+    /**
+     * Hapus seluruh tabel dari database secara aman untuk semua driver database.
+     */
+    public function dropAllTables(): void
+    {
+        $driver = strtolower((string) $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME));
+
+        if ($driver === 'sqlite') {
+            $this->pdo->exec('PRAGMA foreign_keys = OFF;');
+            $stmt = $this->pdo->query("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'");
+            $tables = $stmt ? $stmt->fetchAll(PDO::FETCH_COLUMN) : [];
+            foreach ($tables as $table) {
+                $this->pdo->exec("DROP TABLE IF EXISTS \"{$table}\";");
+            }
+            $this->pdo->exec('PRAGMA foreign_keys = ON;');
+        } elseif ($driver === 'pgsql') {
+            $stmt = $this->pdo->query("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
+            $tables = $stmt ? $stmt->fetchAll(PDO::FETCH_COLUMN) : [];
+            foreach ($tables as $table) {
+                $this->pdo->exec("DROP TABLE IF EXISTS \"{$table}\" CASCADE;");
+            }
+        } else {
+            // MySQL & MariaDB
+            $this->pdo->exec('SET FOREIGN_KEY_CHECKS = 0;');
+            $stmt = $this->pdo->query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'");
+            $tables = $stmt ? $stmt->fetchAll(PDO::FETCH_COLUMN) : [];
+            foreach ($tables as $table) {
+                $this->pdo->exec("DROP TABLE IF EXISTS `{$table}`;");
+            }
+            $this->pdo->exec('SET FOREIGN_KEY_CHECKS = 1;');
+        }
+    }
+
+    /**
      * Batalkan (rollback) migrasi dari batch terakhir.
      *
      * @return array<int, string> Daftar file migrasi yang di-rollback

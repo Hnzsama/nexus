@@ -92,6 +92,9 @@ abstract class Migration
 
                 // 7. UNSIGNED -> Hapus di SQLite
                 $normalized = preg_replace('/\bUNSIGNED\b/i', '', $normalized) ?? $normalized;
+
+                // 8. INSERT IGNORE -> INSERT OR IGNORE
+                $normalized = preg_replace('/\bINSERT\s+IGNORE\s+INTO\b/i', 'INSERT OR IGNORE INTO', $normalized) ?? $normalized;
                 break;
 
             case 'pgsql':
@@ -146,6 +149,9 @@ abstract class Migration
                     'BIGINT AUTO_INCREMENT PRIMARY KEY',
                     $normalized
                 ) ?? $normalized;
+
+                // 2. INSERT OR IGNORE -> INSERT IGNORE di MySQL/MariaDB
+                $normalized = preg_replace('/\bINSERT\s+OR\s+IGNORE\s+INTO\b/i', 'INSERT IGNORE INTO', $normalized) ?? $normalized;
                 break;
         }
 

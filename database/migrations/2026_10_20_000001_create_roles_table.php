@@ -25,12 +25,18 @@ class CreateRolesTable extends Migration
         ", $pdo);
         $this->execute("CREATE INDEX IF NOT EXISTS idx_roles_name ON roles (name);", $pdo);
 
-        // Seed roles default
-        $this->execute("
-            INSERT OR IGNORE INTO roles (id, name, display_name, description) VALUES 
-            (1, 'admin', 'Administrator', 'Pengelola sistem, jadwal tayang, studio, dan transaksi'),
-            (2, 'customer', 'Customer', 'Pengguna umum bioskop yang dapat memesan tiket');
-        ", $pdo);
+        // Seed roles default secara aman untuk seluruh dialek (MySQL, MariaDB, SQLite, PostgreSQL)
+        try {
+            $stmt = $pdo->prepare("SELECT id FROM roles WHERE id = ?");
+            $stmt->execute([1]);
+            if (!$stmt->fetch()) {
+                $ins = $pdo->prepare("INSERT INTO roles (id, name, display_name, description) VALUES (?, ?, ?, ?)");
+                $ins->execute([1, 'admin', 'Administrator', 'Pengelola sistem, jadwal tayang, studio, dan transaksi']);
+                $ins->execute([2, 'customer', 'Customer', 'Pengguna umum bioskop yang dapat memesan tiket']);
+            }
+        } catch (\Throwable $e) {
+            // Abaikan jika sudah ada
+        }
     }
 
     public function down(PDO $pdo): void

@@ -45,6 +45,7 @@ $argument = $argv[2] ?? null;
 match ($command) {
     'dev' => runDevServer(),
     'migrate' => runMigrate(),
+    'migrate:fresh' => runMigrateFresh($argv),
     'migrate:rollback' => runMigrateRollback(),
     'migrate:status' => runMigrateStatus(),
     'storage:link' => runStorageLink(),
@@ -170,6 +171,42 @@ function runMigrate(): void
         echo COLOR_BOLD . COLOR_GREEN . "\nSeluruh migrasi selesai dieksekusi!\n" . COLOR_RESET;
     } catch (Throwable $e) {
         echo COLOR_RED . "  ✖ Error Migrasi: " . $e->getMessage() . COLOR_RESET . "\n";
+        exit(1);
+    }
+}
+
+/**
+ * Drop seluruh tabel dan eksekusi ulang seluruh migrasi dari awal.
+ * Opsi: --seed untuk langsung menginjeksi seeder dasar.
+ */
+function runMigrateFresh(array $argv = []): void
+{
+    echo COLOR_BOLD . COLOR_MAGENTA . "=== Nexus Migrate Fresh ===" . COLOR_RESET . "\n";
+    echo COLOR_YELLOW . "  Mengosongkan seluruh tabel database...\n" . COLOR_RESET;
+
+    try {
+        $migrator = new Migrator();
+        $migrated = $migrator->fresh();
+
+        foreach ($migrated as $migration) {
+            echo COLOR_GREEN . "  ✔ Berhasil : " . COLOR_RESET . $migration . "\n";
+        }
+        echo COLOR_BOLD . COLOR_GREEN . "\nSeluruh skema tabel berhasil dibuat ulang dari awal!\n" . COLOR_RESET;
+
+        $hasSeed = in_array('--seed', $argv, true);
+        if ($hasSeed) {
+            echo "\n" . COLOR_CYAN . "🌱 Menjalankan Seeder Otomatis (--seed)...\n" . COLOR_RESET;
+            require_once __DIR__ . '/database/seeders/RoleSeeder.php';
+            \Database\Seeders\RoleSeeder::run();
+            echo COLOR_GREEN . "  ✔ RoleSeeder selesai dieksekusi.\n" . COLOR_RESET;
+
+            require_once __DIR__ . '/database/seeders/CinemaSeeder.php';
+            \Database\Seeders\CinemaSeeder::run();
+            echo COLOR_GREEN . "  ✔ CinemaSeeder selesai dieksekusi.\n" . COLOR_RESET;
+            echo COLOR_BOLD . COLOR_GREEN . "\nDatabase fresh & seed berhasil dipersiapkan!\n\n" . COLOR_RESET;
+        }
+    } catch (Throwable $e) {
+        echo COLOR_RED . "  ✖ Error Migrate Fresh: " . $e->getMessage() . COLOR_RESET . "\n";
         exit(1);
     }
 }
@@ -540,6 +577,7 @@ function showHelp(): void
         'make:request <Name>'   => 'Buat class FormRequest validasi baru di app/Requests/',
         'make:migration <Name>' => 'Buat file skema migrasi baru di database/migrations/',
         'migrate'               => 'Jalankan seluruh migrasi database yang pending',
+        'migrate:fresh [--seed]'=> 'Hapus seluruh tabel dan jalankan ulang migrasi dari awal (+ seeder)',
         'migrate:rollback'      => 'Batalkan (rollback) batch migrasi database terakhir',
         'migrate:status'        => 'Tampilkan tabel status seluruh file migrasi',
         'seats:cleanup'         => 'Sapu bersih hold kursi kedaluwarsa & batalkan order unpaid',
