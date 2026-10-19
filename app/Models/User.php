@@ -12,6 +12,8 @@ use Core\Database\Model;
  * Model pengguna aplikasi berbasis Nexus Model.
  * 
  * @property int|string $id
+ * @property int|string|null $role_id
+ * @property string $role
  * @property string $name
  * @property string $email
  * @property string $password
@@ -26,6 +28,8 @@ class User extends Model
         'name',
         'email',
         'password',
+        'role',
+        'role_id',
         'phone',
         'avatar',
         'email_verified_at',
@@ -76,6 +80,37 @@ class User extends Model
     }
 
     /**
+     * Dapatkan instance Model Role terkait.
+     */
+    public function roleModel(): ?Role
+    {
+        if (!empty($this->role_id)) {
+            return Role::find($this->role_id);
+        }
+        if (!empty($this->role)) {
+            return Role::where('name', $this->role)->first();
+        }
+        return null;
+    }
+
+    /**
+     * Cek apakah pengguna memiliki hak akses Administrator.
+     */
+    public function isAdmin(): bool
+    {
+        return strtolower((string) ($this->role ?? '')) === 'admin'
+            || (int) ($this->role_id ?? 0) === 1;
+    }
+
+    /**
+     * Cek apakah pengguna merupakan Customer reguler.
+     */
+    public function isCustomer(): bool
+    {
+        return !$this->isAdmin();
+    }
+
+    /**
      * Kembalikan representasi array yang aman tanpa mengekspos hash password atau token rahasia.
      *
      * @return array<string, mixed>
@@ -86,6 +121,8 @@ class User extends Model
             'id' => (int) $this->id,
             'name' => (string) $this->name,
             'email' => (string) $this->email,
+            'role' => (string) ($this->role ?? 'customer'),
+            'role_id' => !empty($this->role_id) ? (int) $this->role_id : null,
             'phone' => (string) ($this->phone ?? ''),
             'avatar' => (string) ($this->avatar ?? ''),
             'avatar_url' => $this->avatarUrl(),

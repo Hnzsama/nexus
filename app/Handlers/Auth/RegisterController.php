@@ -86,12 +86,13 @@ class RegisterController extends Controller
         // Generate token verifikasi email (6 digit)
         $verifToken = (string) random_int(100000, 999999);
 
-        // Buat user baru
+        // Buat user baru dengan role customer
         $user = new User();
         $user->name = $name;
         $user->email = $email;
         $user->password = password_hash($password, PASSWORD_BCRYPT);
         $user->phone = $phone;
+        $user->role = 'customer';
         $user->verification_token = $verifToken;
         $user->api_token = bin2hex(random_bytes(32));
         $user->save();
