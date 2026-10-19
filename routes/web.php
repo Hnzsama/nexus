@@ -44,6 +44,10 @@ Router::group(['prefix' => '/api/v1'], function (Router $router) {
 });
 
 use App\Handlers\UserController;
+use App\Middlewares\AdminMiddleware;
+use App\Middlewares\AuthMiddleware;
+use App\Middlewares\GuestMiddleware;
+use App\Middlewares\RoleMiddleware;
 
 // Contoh Endpoint POST dengan proteksi CSRF
 Router::post('/submit', function (Request $request) {
@@ -53,12 +57,17 @@ Router::post('/submit', function (Request $request) {
     ]);
 })->name('submit');
 
-// Manajemen User & Pengujian Active Record ORM
-Router::get('/users', [UserController::class, 'index'])->name('users.index');
-Router::post('/users', [UserController::class, 'store'])->name('users.store');
-Router::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
-Router::post('/users/{id}/delete', [UserController::class, 'destroy'])->name('users.delete');
-Router::get('/users/seed', [UserController::class, 'seed'])->name('users.seed');
+// Manajemen User Backoffice (Dilindungi AuthMiddleware & AdminMiddleware)
+Router::group([
+    'prefix' => '/users',
+    'middleware' => [AuthMiddleware::class, AdminMiddleware::class]
+], function (Router $router) {
+    $router->addGet('', [UserController::class, 'index'])->name('users.index');
+    $router->addPost('', [UserController::class, 'store'])->name('users.store');
+    $router->addDelete('/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+    $router->addPost('/{id}/delete', [UserController::class, 'destroy'])->name('users.delete');
+    $router->addGet('/seed', [UserController::class, 'seed'])->name('users.seed');
+});
 
 use App\Handlers\DocsHandler;
 
