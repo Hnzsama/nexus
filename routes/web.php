@@ -72,12 +72,12 @@ Router::get('/api/docs-jobdesk/progress', [DocsHandler::class, 'apiGetJobdeskPro
 Router::post('/api/docs-jobdesk/toggle', [DocsHandler::class, 'apiToggleJobdeskTask'])->name('api.docs.jobdesk.toggle');
 Router::post('/api/docs-jobdesk/reset', [DocsHandler::class, 'apiResetJobdeskProgress'])->name('api.docs.jobdesk.reset');
 
-use App\Handlers\SwaggerHandler;
+use App\Handlers\Swagger\SwaggerController;
 
 // Rute Dokumentasi RESTful API Swagger UI & OpenAPI 3.0
-Router::get('/swagger', [SwaggerHandler::class, 'index'])->name('swagger.index');
-Router::get('/swagger/scalar', [SwaggerHandler::class, 'scalar'])->name('swagger.scalar');
-Router::get('/swagger/openapi.json', [SwaggerHandler::class, 'spec'])->name('swagger.json');
+Router::get('/swagger', [SwaggerController::class, 'index'])->name('swagger.index');
+Router::get('/swagger/scalar', [SwaggerController::class, 'scalar'])->name('swagger.scalar');
+Router::get('/swagger/openapi.json', [SwaggerController::class, 'spec'])->name('swagger.json');
 
 use App\Handlers\CinemaController;
 use App\Handlers\CheckoutController;

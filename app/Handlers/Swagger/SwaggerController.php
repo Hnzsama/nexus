@@ -2,19 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Handlers;
+namespace App\Handlers\Swagger;
 
+use App\Handlers\Controller;
 use Core\Http\Request;
 use Core\Http\Response;
 use OpenApi\Generator;
 use Throwable;
 
 /**
- * Class SwaggerHandler
+ * Class SwaggerController
  * 
- * Handler untuk menyajikan antarmuka Swagger UI dan endpoint spesifikasi OpenAPI 3.0.
+ * Pengendali antarmuka dokumentasi API interaktif:
+ * - Swagger UI (Dark Pro)
+ * - Scalar Modern API Studio
+ * - Endpoint spesifikasi OpenAPI 3.0 dinamis
  */
-class SwaggerHandler extends Controller
+class SwaggerController extends Controller
 {
     /**
      * Tampilkan halaman Swagger UI interaktif.
@@ -22,7 +26,7 @@ class SwaggerHandler extends Controller
     public function index(Request $request): Response
     {
         return $this->view('pages/swagger', [
-            'title' => 'API Documentation (Swagger UI)',
+            'title'   => 'API Documentation (Swagger UI)',
             'specUrl' => route('swagger.json'),
         ]);
     }
@@ -33,7 +37,7 @@ class SwaggerHandler extends Controller
     public function scalar(Request $request): Response
     {
         return $this->view('pages/scalar', [
-            'title' => 'Nexus API Documentation (Scalar Modern)',
+            'title'   => 'Nexus API Documentation (Scalar Modern)',
             'specUrl' => route('swagger.json'),
         ]);
     }
@@ -60,22 +64,22 @@ class SwaggerHandler extends Controller
 
             if ($openapi === null) {
                 return Response::json([
-                    'status' => 'error',
+                    'status'  => 'error',
                     'message' => 'Gagal memproses spesifikasi OpenAPI.',
                 ], 500);
             }
 
             return new Response($openapi->toJson(), 200, [
-                'Content-Type' => 'application/json; charset=utf-8',
-                'Access-Control-Allow-Origin' => '*',
-                'Cache-Control' => 'no-cache, private',
+                'Content-Type'                 => 'application/json; charset=utf-8',
+                'Access-Control-Allow-Origin'  => '*',
+                'Cache-Control'                => 'no-cache, private',
             ]);
         } catch (Throwable $e) {
             return Response::json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => 'Swagger Generator Error: ' . $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
             ], 500);
         }
     }

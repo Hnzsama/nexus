@@ -140,6 +140,221 @@
                 }
             }
         },
+        "/api/auth/forgot-password": {
+            "post": {
+                "tags": [
+                    "Authentication & Accounts"
+                ],
+                "summary": "Permohonan Lupa Password (Forgot Password)",
+                "description": "Membuat token reset password sementara (berlaku 15 menit) dan mengirimkan instruksi pemulihan ke email pengguna.",
+                "operationId": "bd1787d230962ea917fdb8ab946e635c",
+                "requestBody": {
+                    "description": "Masukkan email akun yang ingin direset:",
+                    "required": true,
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "Alamat Email Terdaftar",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": ""
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "fauzi@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token instruksi reset password berhasil diterbitkan.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Instruksi reset password telah dikirim ke email Anda."
+                                        },
+                                        "reset_token": {
+                                            "type": "string",
+                                            "example": "RESET-718293"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "example": "2026-10-20 01:30:00"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Alamat email tidak terdaftar di sistem."
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication & Accounts"
+                ],
+                "summary": "Login Pengguna & Mendapatkan API Token",
+                "description": "Memverifikasi kredensial email dan password pengguna, lalu menerbitkan Bearer Token dan sesi login aktif.",
+                "operationId": "850961354de5a6cf675bd5b9bd14f54f",
+                "requestBody": {
+                    "description": "Masukkan email dan password untuk login:",
+                    "required": true,
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "Alamat Email Terdaftar",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": ""
+                                    },
+                                    "password": {
+                                        "description": "Kata Sandi Akun",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": ""
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "fauzi@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Rahasia123!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login berhasil.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login berhasil."
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "e2b10a9f..."
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Kredensial tidak valid (email atau password salah)."
+                    },
+                    "422": {
+                        "description": "Parameter email atau password tidak lengkap."
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication & Accounts"
+                ],
+                "summary": "Logout Pengguna",
+                "description": "Menghapus sesi login aktif di server dan mengosongkan API Token pengguna.",
+                "operationId": "e2824606433848c6c6929d9ba7154c75",
+                "responses": {
+                    "200": {
+                        "description": "Logout berhasil.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Anda telah berhasil logout."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Pengguna belum terautentikasi (Unauthenticated)."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/auth/register": {
             "post": {
                 "tags": [
@@ -147,10 +362,45 @@
                 ],
                 "summary": "Registrasi Pengguna Baru",
                 "description": "Mendaftarkan akun baru ke sistem bioskop dengan password terenkripsi bcrypt, membuat token verifikasi email, dan mengembalikan data pengguna serta API Bearer Token.",
-                "operationId": "7ba62f5547092dd363b15dfcec145a42",
+                "operationId": "f6cd7e7af7599ab0edb656436686796f",
                 "requestBody": {
+                    "description": "Isi formulir pendaftaran di bawah ini:",
                     "required": true,
                     "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "description": "Nama Lengkap",
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "email": {
+                                        "description": "Alamat Email Aktif",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": ""
+                                    },
+                                    "password": {
+                                        "description": "Kata Sandi (min. 8 karakter)",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": ""
+                                    },
+                                    "phone": {
+                                        "description": "Nomor WhatsApp / HP",
+                                        "type": "string",
+                                        "example": ""
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
                         "application/json": {
                             "schema": {
                                 "required": [
@@ -224,180 +474,6 @@
                 }
             }
         },
-        "/api/auth/login": {
-            "post": {
-                "tags": [
-                    "Authentication & Accounts"
-                ],
-                "summary": "Login Pengguna & Mendapatkan API Token",
-                "description": "Memverifikasi kredensial email dan password pengguna, lalu menerbitkan Bearer Token dan sesi login aktif.",
-                "operationId": "498d9bca9b065c6eec37275ce4e08846",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email",
-                                    "password"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "fauzi@example.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "Rahasia123!"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Login berhasil.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Login berhasil."
-                                        },
-                                        "token": {
-                                            "type": "string",
-                                            "example": "e2b10a9f..."
-                                        },
-                                        "user": {
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Kredensial tidak valid (email atau password salah)."
-                    },
-                    "422": {
-                        "description": "Parameter email atau password tidak lengkap."
-                    }
-                }
-            }
-        },
-        "/api/auth/logout": {
-            "post": {
-                "tags": [
-                    "Authentication & Accounts"
-                ],
-                "summary": "Logout Pengguna",
-                "description": "Menghapus sesi login aktif di server dan mengosongkan API Token pengguna.",
-                "operationId": "5e09f31c42692e79e4c4f32fab5d4582",
-                "responses": {
-                    "200": {
-                        "description": "Logout berhasil.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Anda telah berhasil logout."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Pengguna belum terautentikasi (Unauthenticated)."
-                    }
-                },
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/auth/forgot-password": {
-            "post": {
-                "tags": [
-                    "Authentication & Accounts"
-                ],
-                "summary": "Permohonan Lupa Password (Forgot Password)",
-                "description": "Membuat token reset password sementara (berlaku 15 menit) dan mengirimkan instruksi pemulihan ke email pengguna.",
-                "operationId": "06c18105230934cf1f08fdac3fe0f948",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "fauzi@example.com"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Token instruksi reset password berhasil diterbitkan.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Instruksi reset password telah dikirim ke email Anda."
-                                        },
-                                        "reset_token": {
-                                            "type": "string",
-                                            "example": "RESET-718293"
-                                        },
-                                        "expires_at": {
-                                            "type": "string",
-                                            "example": "2026-10-20 01:30:00"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Alamat email tidak terdaftar di sistem."
-                    }
-                }
-            }
-        },
         "/api/auth/reset-password": {
             "post": {
                 "tags": [
@@ -405,10 +481,40 @@
                 ],
                 "summary": "Eksekusi Reset Password Baru",
                 "description": "Memvalidasi kode token reset password dan masa berlakunya, lalu mengganti password akun dengan hash baru.",
-                "operationId": "90020665d6e8ba01d72180d2803db177",
+                "operationId": "cffe4c00d3ab8906676bcf18ef22a10d",
                 "requestBody": {
+                    "description": "Masukkan email, kode token, dan password baru:",
                     "required": true,
                     "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "token",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "Alamat Email Terdaftar",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": ""
+                                    },
+                                    "token": {
+                                        "description": "Kode Token Reset 6-Digit",
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "password": {
+                                        "description": "Kata Sandi Baru (min. 8 karakter)",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": ""
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
                         "application/json": {
                             "schema": {
                                 "required": [
@@ -474,10 +580,32 @@
                 ],
                 "summary": "Verifikasi Alamat Email",
                 "description": "Memvalidasi kode verifikasi email pengguna dan menandai akun terverifikasi (email_verified_at).",
-                "operationId": "cd703d35ca4b39fec430a511df317392",
+                "operationId": "cac4ed94f211188004ecd5f2003aefd7",
                 "requestBody": {
+                    "description": "Masukkan kode verifikasi email 6-digit:",
                     "required": true,
                     "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "token"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "description": "Kode Verifikasi 6-Digit (dari registrasi)",
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "email": {
+                                        "description": "Alamat Email (opsional jika token unik)",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": ""
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
                         "application/json": {
                             "schema": {
                                 "required": [
@@ -533,10 +661,27 @@
                 ],
                 "summary": "Kirim Ulang Kode Verifikasi Email",
                 "description": "Menghasilkan kode verifikasi baru jika kode sebelumnya kedaluwarsa atau hilang.",
-                "operationId": "b62bc62d6c8b9a1450878ecf35da7eae",
+                "operationId": "f15aba767264c53e6afc14451f8d9864",
                 "requestBody": {
+                    "description": "Masukkan email akun untuk pengiriman ulang kode verifikasi:",
                     "required": true,
                     "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "Alamat Email Akun",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": ""
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
                         "application/json": {
                             "schema": {
                                 "required": [
@@ -597,8 +742,47 @@
                 "description": "Mengunci kursi secara atomik dengan Canonical Sorting (seat_ids ASC), Row Locking (SELECT ... FOR UPDATE), validasi double-check conflict, dan request Snap Token Midtrans dengan masa berlaku 540 detik.",
                 "operationId": "b0b3ddcffceb0452c4c9c3dbf23af03b",
                 "requestBody": {
+                    "description": "Isi formulir checkout pemesanan tiket:",
                     "required": true,
                     "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "showtime_id",
+                                    "seat_ids",
+                                    "customer_name",
+                                    "customer_email",
+                                    "customer_phone"
+                                ],
+                                "properties": {
+                                    "showtime_id": {
+                                        "description": "ID Jadwal Tayang",
+                                        "type": "integer"
+                                    },
+                                    "seat_ids": {
+                                        "description": "Daftar ID Kursi",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "customer_name": {
+                                        "description": "Nama Lengkap",
+                                        "type": "string"
+                                    },
+                                    "customer_email": {
+                                        "description": "Alamat Email",
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "customer_phone": {
+                                        "description": "Nomor WhatsApp / HP",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
                         "application/json": {
                             "schema": {
                                 "required": [
@@ -1157,8 +1341,30 @@
                 "description": "Mengubah password pengguna setelah memverifikasi kecocokan password lama (current_password).",
                 "operationId": "62eacac4cb5ce758537ae69093f889ae",
                 "requestBody": {
+                    "description": "Masukkan password saat ini dan password baru:",
                     "required": true,
                     "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "new_password"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "description": "Kata Sandi Saat Ini",
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "new_password": {
+                                        "description": "Kata Sandi Baru (min. 8 karakter)",
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
                         "application/json": {
                             "schema": {
                                 "required": [
