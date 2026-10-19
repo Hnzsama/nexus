@@ -8,7 +8,7 @@ Sistem *Cinema Ticketing & Real-Time Seat Booking Engine* dikembangkan oleh tim 
 
 | No | Anggota | Peran / Spesialisasi Utama | Fokus Area & Tanggung Jawab Inti |
 | :---: | :--- | :--- | :--- |
-| 1 | **Aku** | **Lead Backend Architect & Payment Integration Engineer** | **100% Seluruh Backend:** Skema Database 11 Tabel InnoDB, Concurrency Engine (*Pessimistic Locking* & *Canonical Sorting*), Dual-Layer Expiry Service, Integrasi Midtrans Snap API, Webhook Idempoten & Verifikasi SHA-512, serta State Machine Transaksi. |
+| 1 | **Aku** | **Lead Backend Architect & Payment Integration Engineer** | **100% Seluruh Backend:** Skema Database Per Tabel, Multi-Role RBAC (Admin & Customer), Concurrency Engine (*Pessimistic Locking* & *Canonical Sorting*), Dual-Layer Expiry Service, Integrasi Midtrans Snap API, Webhook Idempoten SHA-512, Pemisahan Controller Modular (`Admin/`, `Customer/`, `Auth/`), serta State Machine Transaksi. |
 | 2 | **Ais** | **Lead UI/UX & Frontend Design Specialist** | **Seluruh Tampilan Visual & Desain:** Design System DaisyUI 5, Tipografi & Palet Warna Mewah, Denah Kursi Bioskop Interaktif (*Curved Screen* & 4 Status Visual), Floating Summary Card, Luxury E-Ticket View, serta Responsivitas Mobile/Desktop. |
 | 3 | **Adrian** | **Frontend Client Logic & Interactive Runtime Engineer** | **Logika Interaktif Browser:** Modular Vanilla JS (`BookingEngine.js`), Sinkronisasi Timer Presisi & Drift Jam Server, Integrasi `window.snap.pay`, Polling Ketersediaan Kursi, Dynamic Price Calculator, dan DOM Event Handler. |
 | 4 | **Pileyo** | **Quality Assurance (QA), Security Auditing & DevOps Engineer** | **Pengujian Sistem & Keandalan Operasional:** Stress Test Konkurensi (*Ticket War* Anti-Double-Booking), Uji Replay Webhook Idempoten, Audit Keamanan Signature SHA-512, Skenario Edge-Case Finansial, serta Deployment Server & Crontab Setup. |
@@ -77,14 +77,15 @@ Memegang tanggung jawab penuh atas **100% sisi backend aplikasi**: skema databas
 
 ### Sub-Task & Checklist Pelaksanaan:
 
-#### A. Database Architecture & Migrations (Bab 2)
-- [ ] Menyusun berkas migrasi 11 tabel relasional InnoDB dengan strict types (`declare(strict_types=1);`):
-  - [ ] Tabel master: `cinemas`, `studios`, `seats`, `movies`, `showtimes`, `pricing_tiers`, `users`.
-  - [ ] Tabel transaksional: `orders`, `order_items`, `seat_holds`, `payment_logs`, `tickets`.
+#### A. Database Architecture & Per-Table Migrations (Bab 2)
+- [ ] Menyusun berkas migrasi modular **per tabel** (1 file migrasi terpisah untuk setiap tabel relasional) dengan strict types (`declare(strict_types=1);`):
+  - [ ] Tabel master: `roles`, `users`, `cinemas`, `studios`, `seats`, `movies`, `showtimes`, `pricing_tiers`.
+  - [ ] Tabel transaksional: `orders`, `order_items`, `seat_holds`, `payments`, `payment_logs`, `tickets`.
 - [ ] Menambahkan *Composite Indexes* berkinerja tinggi:
   - [ ] `showtimes(movie_id, studio_id, start_time)`
   - [ ] `seat_holds(showtime_id, seat_id, status)`
   - [ ] `order_items(order_id, seat_id)`
+  - [ ] `users(role)`, `users(api_token)`, `users(verification_token)`
 - [ ] Menegakkan integritas referensial: `FOREIGN KEY` dengan aturan `ON DELETE CASCADE / RESTRICT` yang tepat.
 - [ ] Menerapkan aturan integritas kardinalitas: Dilarang keras menaruh kolom status `LOCKED/BOOKED` langsung pada tabel master `seats`.
 
@@ -121,6 +122,24 @@ Memegang tanggung jawab penuh atas **100% sisi backend aplikasi**: skema databas
 - [ ] Logika Sukses (`PAID`): Ubah status `orders` menjadi `PAID`, ubah `seat_holds` menjadi `CONVERTED`, dan terbitkan record ke tabel `tickets`.
 - [ ] Logika Gagal/Batal (`CANCELLED` / `EXPIRED`): Ubah `orders` menjadi `EXPIRED`, ubah status `seat_holds` menjadi `RELEASED` agar kursi langsung dapat dipesan orang lain.
 - [ ] Validasi input ketat dengan FormRequest (`CheckoutRequest`) menggunakan `declare(strict_types=1);`.
+
+#### G. Multi-Role RBAC (Admin & Customer) & Autentikasi Mandiri
+- [ ] Membangun skema otorisasi berbasis peran: tabel master `roles` (`admin`, `customer`) dan foreign key `users.role_id` / `users.role`.
+- [ ] Mengembangkan `AdminMiddleware` untuk membatasi akses backoffice dengan respon HTTP 401 (*Unauthenticated*) dan HTTP 403 (*Forbidden*).
+- [ ] Memisahkan siklus autentikasi mandiri ke controller terdedikasi di `App\Handlers\Auth\`:
+  - [ ] `RegisterController`: Registrasi akun customer dengan default role 'customer'.
+  - [ ] `LoginController`: Autentikasi email/password, sesi login, dan penerbitan API Bearer Token.
+  - [ ] `ForgotPasswordController` & `ResetPasswordController`: Token reset password sementara (15 menit).
+  - [ ] `VerificationController`: Validasi kode verifikasi email 6 digit dan kirim ulang kode.
+  - [ ] `ProfileController`: Manajemen profil akun, edit password, dan upload avatar via `Storage::disk('public')`.
+- [ ] Menyiapkan database seeder `RoleSeeder` untuk inisialisasi akun Super Administrator default (`admin@nexus.test`).
+
+#### H. Modular Controller Architecture (Admin Backoffice vs Customer Experience)
+- [ ] Memisahkan arsitektur controller ke dalam folder terisolasi:
+  - [ ] `App\Handlers\Admin\`: Backoffice CRUD Bioskop (`CinemaController`), Film (`MovieController`), Jadwal Tayang (`ShowtimeController`), dan Laporan Transaksi (`OrderController`).
+  - [ ] `App\Handlers\Customer\`: Katalog Bioskop & Film (`CinemaController`), Checkout Atomik & Snap Token (`CheckoutController`), dan Riwayat E-Tiket Digital (`TicketController`).
+  - [ ] `App\Handlers\Swagger\`: Dokumentasi interaktif OpenAPI 3.0 (`SwaggerController`).
+- [ ] Modularisasi rute ke berkas terpisah: `routes/auth.php`, `routes/customer.php`, dan `routes/admin.php` yang dimuat terpusat di `routes/web.php`.
 
 ---
 

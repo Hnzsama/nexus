@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Handlers;
+namespace App\Handlers\Customer;
 
+use App\Handlers\Controller;
 use App\Requests\CheckoutRequest;
 use App\Services\BookingService;
 use Core\Database\Connection;
@@ -16,7 +17,7 @@ use Throwable;
 /**
  * Class CheckoutController
  * 
- * Handler untuk orkestrasi checkout transaksi, penguncian kursi atomik, dan perolehan Snap Token Midtrans.
+ * Handler customer untuk orkestrasi checkout transaksi, penguncian kursi atomik, dan perolehan Snap Token Midtrans.
  */
 class CheckoutController extends Controller
 {
@@ -42,16 +43,16 @@ class CheckoutController extends Controller
                     schema: new OA\Schema(
                         required: ['showtime_id', 'seat_ids', 'customer_name', 'customer_email', 'customer_phone'],
                         properties: [
-                            new OA\Property(property: 'showtime_id', type: 'integer', description: 'ID Jadwal Tayang'),
+                            new OA\Property(property: 'showtime_id', type: 'integer', example: '', description: 'ID Jadwal Tayang'),
                             new OA\Property(
                                 property: 'seat_ids',
                                 type: 'array',
                                 items: new OA\Items(type: 'integer'),
                                 description: 'Daftar ID Kursi'
                             ),
-                            new OA\Property(property: 'customer_name', type: 'string', description: 'Nama Lengkap'),
-                            new OA\Property(property: 'customer_email', type: 'string', format: 'email', description: 'Alamat Email'),
-                            new OA\Property(property: 'customer_phone', type: 'string', description: 'Nomor WhatsApp / HP'),
+                            new OA\Property(property: 'customer_name', type: 'string', example: '', description: 'Nama Lengkap'),
+                            new OA\Property(property: 'customer_email', type: 'string', format: 'email', example: '', description: 'Alamat Email'),
+                            new OA\Property(property: 'customer_phone', type: 'string', example: '', description: 'Nomor WhatsApp / HP'),
                         ]
                     )
                 ),
@@ -94,7 +95,7 @@ class CheckoutController extends Controller
                 description: 'Konflik: Kursi telah dipesan atau sedang di-hold pelanggan lain.',
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: 'status', type: 'error'),
+                        new OA\Property(property: 'status', type: 'string', example: 'error'),
                         new OA\Property(property: 'message', type: 'string', example: 'Kursi pilihan Anda sedang dipilih pengguna lain.')
                     ]
                 )
@@ -111,7 +112,7 @@ class CheckoutController extends Controller
 
         if (empty($seatIds)) {
             return Response::json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => 'Silakan pilih minimal 1 kursi sebelum melakukan checkout.',
             ], 422);
         }
@@ -141,16 +142,16 @@ class CheckoutController extends Controller
             );
 
             return Response::json([
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => 'Kursi berhasil dikunci selama 10 menit. Silakan selesaikan pembayaran.',
-                'data' => $result,
+                'data'    => $result,
             ], 201);
         } catch (Throwable $e) {
             $code = $e->getCode();
             $statusCode = ($code >= 400 && $code < 600) ? (int)$code : 500;
 
             return Response::json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => $e->getMessage(),
             ], $statusCode);
         }
@@ -166,7 +167,7 @@ class CheckoutController extends Controller
                 name: 'orderNumber',
                 in: 'path',
                 required: true,
-                description: 'Nomor Order Transaksi (NEXUS-*)',
+                description: 'Nomor Order Transaksi (NX-*)',
                 schema: new OA\Schema(type: 'string', example: 'NX-20261020-8F92A')
             )
         ],
@@ -205,7 +206,7 @@ class CheckoutController extends Controller
 
         if (!$order) {
             return Response::json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => "Order dengan nomor '{$orderNumber}' tidak ditemukan.",
             ], 404);
         }
@@ -227,8 +228,8 @@ class CheckoutController extends Controller
         $tickets = $ticketsStmt->fetchAll(PDO::FETCH_ASSOC);
 
         return Response::json([
-            'status' => 'success',
-            'order' => $order,
+            'status'  => 'success',
+            'order'   => $order,
             'payment' => $payment,
             'tickets' => $tickets,
         ]);

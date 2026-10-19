@@ -144,6 +144,14 @@ class Request
     }
 
     /**
+     * Periksa apakah input tertentu ada dalam request.
+     */
+    public function has(string $key): bool
+    {
+        return array_key_exists($key, $this->all());
+    }
+
+    /**
      * Set parameter rute dinamis yang diekstrak oleh Router.
      *
      * @param array<string, string> $params

@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Handlers;
+namespace App\Handlers\Customer;
 
+use App\Handlers\Controller;
+use App\Models\Cinema;
 use App\Models\Movie;
 use App\Models\Showtime;
 use App\Services\BookingService;
@@ -17,7 +19,7 @@ use Throwable;
 /**
  * Class CinemaController
  * 
- * Handler untuk katalog film, jadwal bioskop, dan denah kursi real-time.
+ * Handler customer untuk menjelajah bioskop, katalog film, jadwal penayangan, dan peta kursi real-time.
  */
 class CinemaController extends Controller
 {
@@ -26,6 +28,33 @@ class CinemaController extends Controller
     public function __construct()
     {
         $this->bookingService = new BookingService();
+    }
+
+    #[OA\Get(
+        path: '/api/cinemas',
+        summary: 'Daftar Bioskop Aktif',
+        description: 'Mengambil daftar lokasi bioskop yang aktif dan beroperasi.',
+        tags: ['Cinema & Movies'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Daftar bioskop berhasil diambil.',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'status', type: 'string', example: 'success'),
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object'))
+                    ]
+                )
+            )
+        ]
+    )]
+    public function cinemas(Request $request): Response
+    {
+        $cinemas = Cinema::where('is_active', 1)->get();
+        return Response::json([
+            'status' => 'success',
+            'data'   => $cinemas,
+        ]);
     }
 
     #[OA\Get(
@@ -68,7 +97,7 @@ class CinemaController extends Controller
 
         return Response::json([
             'status' => 'success',
-            'data' => $movies,
+            'data'   => $movies,
         ]);
     }
 
@@ -106,7 +135,7 @@ class CinemaController extends Controller
         $movie = Movie::where('slug', '=', $slug)->first();
         if (!$movie) {
             return Response::json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => "Film dengan slug '{$slug}' tidak ditemukan.",
             ], 404);
         }
@@ -126,8 +155,8 @@ class CinemaController extends Controller
         $showtimes = $stStmt->fetchAll(PDO::FETCH_ASSOC);
 
         return Response::json([
-            'status' => 'success',
-            'movie' => $movie,
+            'status'    => 'success',
+            'movie'     => $movie,
             'showtimes' => $showtimes,
         ]);
     }
@@ -171,38 +200,13 @@ class CinemaController extends Controller
 
             return Response::json([
                 'status' => 'success',
-                'data' => $layout,
+                'data'   => $layout,
             ]);
         } catch (Throwable $e) {
             return Response::json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => $e->getMessage(),
             ], 404);
-        }
-    }
-
-    /**
-     * Endpoint untuk menjalankan migrasi 11 tabel & seed data awal bioskop.
-     */
-    public function seed(Request $request): Response
-    {
-        try {
-            $migrator = new \Core\Database\Migrator();
-            $migrated = $migrator->run();
-
-            require_once base_path('database/seeders/CinemaSeeder.php');
-            \Database\Seeders\CinemaSeeder::run();
-
-            return Response::json([
-                'status' => 'success',
-                'message' => 'Migrasi 11 tabel & Cinema Seeder berhasil dijalankan!',
-                'migrated_files' => $migrated,
-            ]);
-        } catch (Throwable $e) {
-            return Response::json([
-                'status' => 'error',
-                'message' => 'Seeder error: ' . $e->getMessage(),
-            ], 500);
         }
     }
 }

@@ -79,32 +79,15 @@ Router::get('/swagger', [SwaggerController::class, 'index'])->name('swagger.inde
 Router::get('/swagger/scalar', [SwaggerController::class, 'scalar'])->name('swagger.scalar');
 Router::get('/swagger/openapi.json', [SwaggerController::class, 'spec'])->name('swagger.json');
 
-use App\Handlers\CinemaController;
-use App\Handlers\CheckoutController;
 use App\Handlers\PaymentWebhookController;
 
-// =========================================================================
-// CINEMA TICKETING, CONCURRENCY & PAYMENT API (BAB 1 - 5)
-// =========================================================================
-
-// 1. Katalog Film & Slot Jadwal Tayang
-Router::get('/api/movies', [CinemaController::class, 'movies'])->name('api.movies.index');
-Router::get('/api/movies/{slug}', [CinemaController::class, 'movieDetail'])->name('api.movies.detail');
-Router::get('/api/cinema/seed', [CinemaController::class, 'seed'])->name('api.cinema.seed');
-
-// 2. Denah Kursi Real-Time (Visual 4 Status & Lazy Expiry)
-Router::get('/api/showtimes/{id}/seats', [CinemaController::class, 'seats'])->name('api.showtimes.seats');
-
-// 3. Checkout Transaksi Atomik & Perolehan Midtrans Snap Token
-Router::post('/api/checkout/create-transaction', [CheckoutController::class, 'createTransaction'])->name('api.checkout.create');
-Router::post('/checkout/create-transaction', [CheckoutController::class, 'createTransaction'])->name('checkout.create');
-Router::get('/api/orders/{orderNumber}', [CheckoutController::class, 'orderDetail'])->name('api.orders.detail');
-
-// 4. Webhook Notifikasi Midtrans Idempoten & Verifikasi SHA-512
+// Webhook Notifikasi Midtrans Idempoten & Verifikasi SHA-512
 Router::post('/api/payment/webhook', [PaymentWebhookController::class, 'handle'])->name('api.payment.webhook');
 Router::post('/payment/webhook', [PaymentWebhookController::class, 'handle'])->name('payment.webhook');
 
 // =========================================================================
-// 5. AUTHENTICATION & USER PROFILE ENGINE
+// MODULAR ROUTE SUB-MODULES (Auth, Customer, & Admin Backoffice)
 // =========================================================================
 require __DIR__ . '/auth.php';
+require __DIR__ . '/customer.php';
+require __DIR__ . '/admin.php';

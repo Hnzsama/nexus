@@ -140,6 +140,462 @@
                 }
             }
         },
+        "/api/admin/cinemas": {
+            "get": {
+                "tags": [
+                    "Admin & Backoffice"
+                ],
+                "summary": "[Admin] Daftar Seluruh Bioskop",
+                "description": "Mengambil seluruh data bioskop (aktif maupun non-aktif) untuk keperluan manajemen backoffice.",
+                "operationId": "86cfd3d6b131c027fd88c099b845c74a",
+                "responses": {
+                    "200": {
+                        "description": "Daftar bioskop berhasil diambil."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "403": {
+                        "description": "Forbidden (Hanya untuk Admin)."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin & Backoffice"
+                ],
+                "summary": "[Admin] Tambah Bioskop Baru",
+                "description": "Mendaftarkan cabang bioskop baru ke sistem.",
+                "operationId": "5a6b1395a8a673ccace271fb94747401",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "code",
+                                    "name",
+                                    "city",
+                                    "address"
+                                ],
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "example": "CGV-CP"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "CGV Central Park"
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "example": "Jakarta Barat"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Jl. Letjen S. Parman No.28"
+                                    },
+                                    "is_active": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Bioskop berhasil ditambahkan."
+                    },
+                    "422": {
+                        "description": "Validasi input gagal."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/cinemas/{id}": {
+            "put": {
+                "tags": [
+                    "Admin & Backoffice"
+                ],
+                "summary": "[Admin] Perbarui Data Bioskop",
+                "description": "Memperbarui informasi cabang bioskop.",
+                "operationId": "77b63513f640c319c55c07f973977a0f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bioskop berhasil diperbarui."
+                    },
+                    "404": {
+                        "description": "Bioskop tidak ditemukan."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin & Backoffice"
+                ],
+                "summary": "[Admin] Hapus Bioskop",
+                "description": "Menghapus cabang bioskop dari sistem.",
+                "operationId": "3bec9ade2ede14922c2f181e723f5dc9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bioskop berhasil dihapus."
+                    },
+                    "404": {
+                        "description": "Bioskop tidak ditemukan."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/movies": {
+            "get": {
+                "tags": [
+                    "Admin & Backoffice"
+                ],
+                "summary": "[Admin] Daftar Seluruh Film",
+                "description": "Mengambil seluruh katalog film (NOW_PLAYING, UPCOMING, ARCHIVED) untuk manajemen backoffice.",
+                "operationId": "b4c9bf01d6923bd601e3e471515616d6",
+                "responses": {
+                    "200": {
+                        "description": "Daftar film berhasil diambil."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "403": {
+                        "description": "Forbidden."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin & Backoffice"
+                ],
+                "summary": "[Admin] Tambah Film Baru",
+                "description": "Menambahkan judul film baru ke sistem bioskop.",
+                "operationId": "ccbc3e5d930e70f487ffd1de0aef9f46",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "duration_minutes"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Oppenheimer"
+                                    },
+                                    "duration_minutes": {
+                                        "type": "integer",
+                                        "example": 180
+                                    },
+                                    "age_rating": {
+                                        "type": "string",
+                                        "example": "17+"
+                                    },
+                                    "synopsis": {
+                                        "type": "string",
+                                        "example": "Kisah fisikawan J. Robert Oppenheimer..."
+                                    },
+                                    "poster_url": {
+                                        "type": "string",
+                                        "example": "https://images.unsplash.com/..."
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "NOW_PLAYING"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Film berhasil ditambahkan."
+                    },
+                    "422": {
+                        "description": "Validasi input gagal."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/movies/{id}": {
+            "put": {
+                "tags": [
+                    "Admin & Backoffice"
+                ],
+                "summary": "[Admin] Perbarui Data Film",
+                "description": "Memperbarui data katalog film.",
+                "operationId": "148d8c38f227d234482acdfa9250e5de",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Film berhasil diperbarui."
+                    },
+                    "404": {
+                        "description": "Film tidak ditemukan."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin & Backoffice"
+                ],
+                "summary": "[Admin] Hapus Film",
+                "description": "Menghapus film dari katalog.",
+                "operationId": "f6024bff00d806d4552f2bbf6556c3bd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Film berhasil dihapus."
+                    },
+                    "404": {
+                        "description": "Film tidak ditemukan."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/orders": {
+            "get": {
+                "tags": [
+                    "Admin & Backoffice"
+                ],
+                "summary": "[Admin] Laporan Transaksi & Pesanan Tiket",
+                "description": "Mengambil daftar transaksi pesanan tiket dengan filter status (PAID, UNPAID, CANCELLED) dan total pendapatan.",
+                "operationId": "9b7904a549ff7083431a2ac48aba59da",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "PAID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Laporan transaksi berhasil diambil."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "403": {
+                        "description": "Forbidden."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/showtimes": {
+            "get": {
+                "tags": [
+                    "Admin & Backoffice"
+                ],
+                "summary": "[Admin] Daftar Seluruh Jadwal Tayang",
+                "description": "Mengambil seluruh slot jadwal tayang di seluruh studio dan bioskop.",
+                "operationId": "5e963d6414baa8a3b50ee136828ea58f",
+                "responses": {
+                    "200": {
+                        "description": "Daftar jadwal tayang berhasil diambil."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "403": {
+                        "description": "Forbidden."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin & Backoffice"
+                ],
+                "summary": "[Admin] Buat Jadwal Tayang Baru",
+                "description": "Menambahkan slot jadwal tayang film di studio tertentu dengan harga dasar tiket.",
+                "operationId": "9c2074a66b879094c1050844b3e3f730",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "movie_id",
+                                    "studio_id",
+                                    "start_time",
+                                    "end_time",
+                                    "base_price"
+                                ],
+                                "properties": {
+                                    "movie_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "studio_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "start_time": {
+                                        "type": "string",
+                                        "example": "2026-10-25 14:00:00"
+                                    },
+                                    "end_time": {
+                                        "type": "string",
+                                        "example": "2026-10-25 16:30:00"
+                                    },
+                                    "base_price": {
+                                        "type": "number",
+                                        "example": 50000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Jadwal tayang berhasil dibuat."
+                    },
+                    "422": {
+                        "description": "Validasi input gagal."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/showtimes/{id}": {
+            "delete": {
+                "tags": [
+                    "Admin & Backoffice"
+                ],
+                "summary": "[Admin] Hapus Jadwal Tayang",
+                "description": "Membatalkan/menghapus jadwal tayang.",
+                "operationId": "2dae7d2cb90249ed6d1c42a80a3d8f79",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Jadwal tayang berhasil dihapus."
+                    },
+                    "404": {
+                        "description": "Jadwal tidak ditemukan."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/auth/forgot-password": {
             "post": {
                 "tags": [
@@ -740,7 +1196,7 @@
                 ],
                 "summary": "Atomic Checkout & Request Midtrans Snap Token",
                 "description": "Mengunci kursi secara atomik dengan Canonical Sorting (seat_ids ASC), Row Locking (SELECT ... FOR UPDATE), validasi double-check conflict, dan request Snap Token Midtrans dengan masa berlaku 540 detik.",
-                "operationId": "b0b3ddcffceb0452c4c9c3dbf23af03b",
+                "operationId": "ca14928eaaafa92b5f3bad01acaf24d2",
                 "requestBody": {
                     "description": "Isi formulir checkout pemesanan tiket:",
                     "required": true,
@@ -757,7 +1213,8 @@
                                 "properties": {
                                     "showtime_id": {
                                         "description": "ID Jadwal Tayang",
-                                        "type": "integer"
+                                        "type": "integer",
+                                        "example": ""
                                     },
                                     "seat_ids": {
                                         "description": "Daftar ID Kursi",
@@ -768,16 +1225,19 @@
                                     },
                                     "customer_name": {
                                         "description": "Nama Lengkap",
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": ""
                                     },
                                     "customer_email": {
                                         "description": "Alamat Email",
                                         "type": "string",
-                                        "format": "email"
+                                        "format": "email",
+                                        "example": ""
                                     },
                                     "customer_phone": {
                                         "description": "Nomor WhatsApp / HP",
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": ""
                                     }
                                 },
                                 "type": "object"
@@ -879,7 +1339,8 @@
                                 "schema": {
                                     "properties": {
                                         "status": {
-                                            "type": "error"
+                                            "type": "string",
+                                            "example": "error"
                                         },
                                         "message": {
                                             "type": "string",
@@ -909,12 +1370,12 @@
                 ],
                 "summary": "Detail Transaksi & Tiket Resmi",
                 "description": "Mengecek status pembayaran order dan mengambil daftar tiket resmi yang telah diterbitkan (QR Token & Barcode Code).",
-                "operationId": "f3dccab3eb2c85297eaf1dc851da108b",
+                "operationId": "5e844f34e6e7d6491579bcdc122503b6",
                 "parameters": [
                     {
                         "name": "orderNumber",
                         "in": "path",
-                        "description": "Nomor Order Transaksi (NEXUS-*)",
+                        "description": "Nomor Order Transaksi (NX-*)",
                         "required": true,
                         "schema": {
                             "type": "string",
@@ -957,6 +1418,40 @@
                 }
             }
         },
+        "/api/cinemas": {
+            "get": {
+                "tags": [
+                    "Cinema & Movies"
+                ],
+                "summary": "Daftar Bioskop Aktif",
+                "description": "Mengambil daftar lokasi bioskop yang aktif dan beroperasi.",
+                "operationId": "946156163245993590b4244af08c1901",
+                "responses": {
+                    "200": {
+                        "description": "Daftar bioskop berhasil diambil.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/movies": {
             "get": {
                 "tags": [
@@ -964,7 +1459,7 @@
                 ],
                 "summary": "Katalog Film Sedang Tayang",
                 "description": "Mengambil daftar film yang sedang tayang (status NOW_PLAYING) lengkap dengan poster, rating usia, dan durasi.",
-                "operationId": "a546c85dc640c183909dec1b5faf827f",
+                "operationId": "5678b7103f27810e8d007a4eb17283ec",
                 "responses": {
                     "200": {
                         "description": "Daftar film berhasil diambil.",
@@ -1028,7 +1523,7 @@
                 ],
                 "summary": "Detail Film & Jadwal Tayang",
                 "description": "Mengambil informasi lengkap film beserta slot jadwal tayang (showtimes) di seluruh bioskop & studio.",
-                "operationId": "01c29a92bbbb12e49a9498c0e0163dd5",
+                "operationId": "907c54988bc4d8b194f4aa3d92b20e76",
                 "parameters": [
                     {
                         "name": "slug",
@@ -1080,7 +1575,7 @@
                 ],
                 "summary": "Peta Kursi Real-Time (Visual 4 Status)",
                 "description": "Mengambil denah grid kursi bioskop dengan status terkini (AVAILABLE, HELD, BOOKED, SELECTED) dan waktu sisa hold (Lazy Expiry).",
-                "operationId": "b2afddbb6eed100b51a4f7e217fc5971",
+                "operationId": "9b744a80975415fbbfe17451553c2f87",
                 "parameters": [
                     {
                         "name": "id",
@@ -1117,6 +1612,48 @@
                         "description": "Jadwal tayang tidak ditemukan."
                     }
                 }
+            }
+        },
+        "/api/tickets": {
+            "get": {
+                "tags": [
+                    "Transactions & Checkout"
+                ],
+                "summary": "Daftar E-Tiket Saya",
+                "description": "Mengambil riwayat tiket bioskop milik pengguna yang sedang login.",
+                "operationId": "db28701b963c8dc23251f05b488a64eb",
+                "responses": {
+                    "200": {
+                        "description": "Daftar tiket pengguna berhasil diambil.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
             }
         },
         "/api/payment/webhook": {
@@ -1467,6 +2004,10 @@
         {
             "name": "General",
             "description": "System health, heartbeat & framework metadata endpoints"
+        },
+        {
+            "name": "Admin & Backoffice",
+            "description": "Admin & Backoffice"
         }
     ]
 }
